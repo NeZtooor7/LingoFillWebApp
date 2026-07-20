@@ -312,7 +312,7 @@ python manage.py runserver
 Open the app:
 
 ```text
-http://127.0.0.1:8000/FillingTheBlanks/
+http://127.0.0.1:8000/LingoFillWebApp/
 ```
 
 ---
@@ -352,7 +352,7 @@ From the project root:
 Then open:
 
 ```text
-http://127.0.0.1:8001/FillingTheBlanks/
+http://127.0.0.1:8001/LingoFillWebApp/
 ```
 
 The WSGI import target is:
@@ -370,7 +370,7 @@ This project can be served locally through Apache using a reverse proxy.
 Expected final URL:
 
 ```text
-http://localhost/FillingTheBlanks/
+http://localhost/LingoFillWebApp/
 ```
 
 General flow:
@@ -382,13 +382,13 @@ Browser → Apache → Waitress → Django
 Apache forwards:
 
 ```text
-/FillingTheBlanks/
+/LingoFillWebApp/
 ```
 
 to Waitress running at:
 
 ```text
-http://127.0.0.1:8001/FillingTheBlanks/
+http://127.0.0.1:8001/LingoFillWebApp/
 ```
 
 Static files can be served by Apache from:
@@ -488,7 +488,7 @@ python manage.py runserver
 Use:
 
 ```text
-http://127.0.0.1:8000/FillingTheBlanks/
+http://127.0.0.1:8000/LingoFillWebApp/
 ```
 
 After changing static files and testing with Apache/Waitress:
@@ -506,7 +506,7 @@ For local production-like testing:
 Use:
 
 ```text
-http://localhost/FillingTheBlanks/
+http://localhost/LingoFillWebApp/
 ```
 
 if Apache is configured as a reverse proxy.
