@@ -37,8 +37,9 @@
     {% endif %}
 
     <section class="generator-card">
-        <form id="ai-exercise-form" name="ai-exercise-form" class="input-form ai-form"
-                method="post" action="{% url 'exercises:ai_exercise_create' %}">
+        <form id="ai-exercise-form" name="ai-exercise-form" class="input-form ai-form" method="post"
+            action="{% url 'exercises:ai_exercise_create' %}"
+            @submit="$store.loading.start('generatingExerciseMessage', 'Generating exercise...')">
             {% csrf_token %}
             <input type="hidden" id="spoken-language-input" name="spoken_language" value="en">
 
@@ -52,56 +53,93 @@
                 placeholder="Example: Practice sein and haben in present tense with ich, du, er, sie and wir."></textarea>
 
             <div class="quick-options-grid">
-                <div class="field-group">
-                    <label for="learning-language-toggle" data-i18n="exerciseLanguageLabel">
-                        Exercise language
-                    </label>
-
-                    <div class="language-dropdown learning-language-dropdown">
-                        <input type="hidden" id="learning-language-input" name="learning_language" value="de">
-
-                        <button id="learning-language-toggle" type="button" class="language-toggle" aria-haspopup="true" aria-expanded="false">
-                            <img id="selected-learning-language-flag" src="{% static 'exercises/flags/de.svg' %}" alt="Deutsch" class="flag-icon">
-                            <span id="selected-learning-language-label">Deutsch</span>
+                <div class="field-group" x-data="learningLanguageSelector">
+                    <label for="learning-language-toggle" data-i18n="exerciseLanguageLabel">Exercise language</label>
+                    <div class="language-dropdown learning-language-dropdown" @click.outside="close">
+                        <input type="hidden" id="learning-language-input" name="learning_language" :value="selected.language">
+                        <button id="learning-language-toggle" type="button" class="language-toggle" :aria-expanded="open" @click="toggle">
+                            <img id="selected-learning-language-flag" class="flag-icon" :src="selected.flag" :alt="selected.label">
+                            <span id="selected-learning-language-label" x-text="selected.label"></span>
                         </button>
-
-                        <div id="learning-language-menu" class="language-menu hidden">
-                            <button type="button" class="learning-language-option" data-lang="es" data-label="Español" data-flag="{% static 'exercises/flags/es.svg' %}">
+                        <div id="learning-language-menu" class="language-menu" x-cloak x-show="open" x-transition @keydown.escape.window="close">
+                            <!-- Keep all eight existing option buttons. -->
+                            <button
+                                type="button"
+                                class="learning-language-option"
+                                data-lang="es"
+                                data-label="Español"
+                                data-flag="{% static 'exercises/flags/es.svg' %}"
+                                @click="selectOption($el)">
                                 <img src="{% static 'exercises/flags/es.svg' %}" alt="Español" class="flag-icon">
                                 <span>Español</span>
                             </button>
-
-                            <button type="button" class="learning-language-option" data-lang="en" data-label="English" data-flag="{% static 'exercises/flags/en.svg' %}">
+                            <button
+                                type="button"
+                                class="learning-language-option"
+                                data-lang="en"
+                                data-label="English"
+                                data-flag="{% static 'exercises/flags/en.svg' %}"
+                                @click="selectOption($el)">
                                 <img src="{% static 'exercises/flags/en.svg' %}" alt="English" class="flag-icon">
                                 <span>English</span>
                             </button>
-
-                            <button type="button" class="learning-language-option" data-lang="de" data-label="Deutsch" data-flag="{% static 'exercises/flags/de.svg' %}">
+                            <button
+                                type="button"
+                                class="learning-language-option"
+                                data-lang="de"
+                                data-label="Deutsch"
+                                data-flag="{% static 'exercises/flags/de.svg' %}"
+                                @click="selectOption($el)">
                                 <img src="{% static 'exercises/flags/de.svg' %}" alt="Deutsch" class="flag-icon">
                                 <span>Deutsch</span>
                             </button>
-
-                            <button type="button" class="learning-language-option" data-lang="ja" data-label="日本語" data-flag="{% static 'exercises/flags/ja.svg' %}">
+                            <button
+                                type="button"
+                                class="learning-language-option"
+                                data-lang="ja"
+                                data-label="日本語"
+                                data-flag="{% static 'exercises/flags/ja.svg' %}"
+                                @click="selectOption($el)">
                                 <img src="{% static 'exercises/flags/ja.svg' %}" alt="日本語" class="flag-icon">
                                 <span>日本語</span>
                             </button>
-
-                            <button type="button" class="learning-language-option" data-lang="hi" data-label="हिन्दी" data-flag="{% static 'exercises/flags/hi.svg' %}">
+                            <button
+                                type="button"
+                                class="learning-language-option"
+                                data-lang="hi"
+                                data-label="हिन्दी"
+                                data-flag="{% static 'exercises/flags/hi.svg' %}"
+                                @click="selectOption($el)">
                                 <img src="{% static 'exercises/flags/hi.svg' %}" alt="हिन्दी" class="flag-icon">
                                 <span>हिन्दी</span>
                             </button>
-
-                            <button type="button" class="learning-language-option" data-lang="ro" data-label="Română" data-flag="{% static 'exercises/flags/ro.svg' %}">
+                            <button
+                                type="button"
+                                class="learning-language-option"
+                                data-lang="ro"
+                                data-label="Română"
+                                data-flag="{% static 'exercises/flags/ro.svg' %}"
+                                @click="selectOption($el)">
                                 <img src="{% static 'exercises/flags/ro.svg' %}" alt="Română" class="flag-icon">
                                 <span>Română</span>
                             </button>
-
-                            <button type="button" class="learning-language-option" data-lang="it" data-label="Italiano" data-flag="{% static 'exercises/flags/it.svg' %}">
+                            <button
+                                type="button"
+                                class="learning-language-option"
+                                data-lang="it"
+                                data-label="Italiano"
+                                data-flag="{% static 'exercises/flags/it.svg' %}"
+                                @click="selectOption($el)">
                                 <img src="{% static 'exercises/flags/it.svg' %}" alt="Italiano" class="flag-icon">
                                 <span>Italiano</span>
                             </button>
-
-                            <button type="button" class="learning-language-option" data-lang="pt" data-label="Português" data-flag="{% static 'exercises/flags/pt.svg' %}">
+                            <button
+                                type="button"
+                                class="learning-language-option"
+                                data-lang="pt"
+                                data-label="Português"
+                                data-flag="{% static 'exercises/flags/pt.svg' %}"
+                                @click="selectOption($el)">
                                 <img src="{% static 'exercises/flags/pt.svg' %}" alt="Português" class="flag-icon">
                                 <span>Português</span>
                             </button>
@@ -139,40 +177,51 @@
                 </div>
             </div>
             <br />
-            <div class="field-group">
-                <label for="focus-multiselect" data-i18n="focusLabel">Focus</label>
+            <div class="field-group" id="focus-multiselect" x-data="focusMultiselect">
+                <label data-i18n="focusLabel">Focus</label>
 
-                <div class="multiselect" id="focus-multiselect">
-                    <button type="button" class="multiselect-box" id="focus-toggle" aria-expanded="false">
-                        <span class="selected-options" id="focus-selected-options"></span>
-                        <span class="multiselect-placeholder" id="focus-placeholder" data-i18n="focusPlaceholder">
+                <div class="multiselect">
+                    <div id="focus-toggle" class="multiselect-box" role="button" tabindex="0"
+                        :aria-expanded="open" @click="toggle" @keydown.enter.prevent="toggle"
+                        @keydown.space.prevent="toggle" @keydown.escape="close">
+                        <span class="selected-options">
+                            <template x-for="item in selectedItems" :key="item.value">
+                                <span class="selected-pill">
+                                    <span x-text="item.label"></span>
+                                    <button type="button" :aria-label="`Remove ${item.label}`" @click.stop="remove(item.value)">
+                                        ×
+                                    </button>
+                                </span>
+                            </template>
+                        </span>
+
+                        <span id="focus-placeholder" class="multiselect-placeholder" data-i18n="focusPlaceholder" x-show="selectedItems.length === 0">
                             Select focus areas
                         </span>
-                    </button>
+                    </div>
 
-                    <div class="multiselect-menu hidden" id="focus-menu">
+                    <div id="focus-menu" class="multiselect-menu" x-ref="menu" x-cloak x-show="open" x-transition @click.outside="close">
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="verbs" data-label-key="focusVerbs" checked>
+                            <input type="checkbox" name="focus" value="verbs" data-label-key="focusVerbs" checked @change="refreshSelection">
                             <span data-i18n="focusVerbs">Verbs</span>
                         </label>
 
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="articles" data-label-key="focusArticles">
+                            <input type="checkbox" name="focus" value="articles" data-label-key="focusArticles" @change="refreshSelection">
                             <span data-i18n="focusArticles">Articles</span>
                         </label>
-
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="pronouns" data-label-key="focusPronouns">
+                            <input type="checkbox" name="focus" value="pronouns" data-label-key="focusPronouns" @change="refreshSelection">
                             <span data-i18n="focusPronouns">Pronouns</span>
                         </label>
 
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="tenses" data-label-key="focusTenses">
+                            <input type="checkbox" name="focus" value="tenses" data-label-key="focusTenses" @change="refreshSelection">
                             <span data-i18n="focusTenses">Tenses</span>
                         </label>
 
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="expressions" data-label-key="focusExpressions">
+                            <input type="checkbox" name="focus" value="expressions" data-label-key="focusExpressions" @change="refreshSelection">
                             <span data-i18n="focusExpressions">Expressions</span>
                         </label>
                     </div>
@@ -241,9 +290,9 @@
                 </div>
             </details>
             <br />
-
-            <button type="submit" name="mode" value="ai" data-i18n="generateAiButton">
-                Generate AI exercise
+            <button type="submit" name="mode" value="ai" :disabled="$store.loading.active">
+                <span x-show="!$store.loading.active" data-i18n="generateAiButton">Generate AI exercise</span>
+                <span x-cloak x-show="$store.loading.active" x-text="window.getCurrentTranslation('loadingButtonText')"></span>
             </button>
         </form>
     </section>

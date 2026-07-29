@@ -7,7 +7,9 @@
     <title>LingoFill</title>
     <link rel="stylesheet" href="{% static 'exercises/styles.css' %}">
 </head>
-<body>
+<body
+    x-data
+    :class="{ 'dark-mode': $store.theme.dark }">
     <main class="page">
         <div class="top-bar">
             <div class="top-bar-control">
@@ -64,8 +66,9 @@
                     </div>
                 </div>
 
-                <button id="dark-mode-toggle" type="button" class="theme-toggle">
-                    🌙 Dark mode
+                <button id="dark-mode-toggle" type="button" class="theme-toggle" @click="$store.theme.toggle()">
+                    <span class="theme-toggle-icon" aria-hidden="true" x-text="$store.theme.buttonIcon"></span>
+                    <span x-text="$store.theme.buttonLabel">Light mode</span>
                 </button>
             </div>
         </div>
@@ -73,16 +76,23 @@
             {% block content %}{% endblock %}
         </section>
     </main>
-    <div id="page-loading-overlay" class="page-loading-overlay hidden" aria-live="polite" aria-busy="true">
+    <div id="page-loading-overlay" class="page-loading-overlay" x-cloak x-show="$store.loading.active" aria-live="polite" aria-busy="true">
         <div class="loading-box">
             <div class="loading-spinner" aria-hidden="true"></div>
-            <p id="loading-message" class="loading-message">Loading...</p>
+            <p id="loading-message" class="loading-message" x-text="$store.loading.message"></p>
         </div>
     </div>
-    <script src="{% static 'exercises/theme.js' %}"></script>
-    <script src="{% static 'exercises/i18n.js' %}"></script>
-    <script src="{% static 'exercises/multiselect.js' %}"></script>
-    <script src="{% static 'exercises/learning_language.js' %}"></script>
-    <script src="{% static 'exercises/loading_overlay.js' %}"></script>
+    <script>
+        window.LINGOFILL_LOCALES_URL = "{% static 'exercises/locales/' %}";
+    </script>
+    <script defer src="{% static 'exercises/vendor/i18next/i18next.min.js' %}"></script>
+    <script defer src="{% static 'exercises/vendor/i18next/i18nextHttpBackend.min.js' %}"></script>
+    <script defer src="{% static 'exercises/language-manager.js' %}"></script>
+    <script defer src="{% static 'exercises/i18n.js' %}"></script>
+    <script defer src="{% static 'exercises/alpine/stores.js' %}"></script>
+    <script defer src="{% static 'exercises/alpine/focus-multiselect.js' %}"></script>
+    <script defer src="{% static 'exercises/alpine/learning-language.js' %}"></script>
+    <script defer src="{% static 'exercises/alpine/clipboard-exercise.js' %}"></script>
+    <script defer src="{% static 'exercises/vendor/alpine/alpine.min.js' %}"></script>
 </body>
 </html>
