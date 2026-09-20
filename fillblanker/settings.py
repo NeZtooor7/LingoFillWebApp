@@ -40,7 +40,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'fillblanker.wsgi.application'
 
-DATABASES = {}
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["DB_NAME"],
+        "USER": os.environ["DB_USER"],
+        "PASSWORD": os.environ["DB_PASSWORD"],
+        "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
+    }
+}
 
 LANGUAGE_CODE = 'en'
 
