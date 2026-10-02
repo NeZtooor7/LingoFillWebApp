@@ -1,5 +1,57 @@
-{% extends 'exercises/base.html' %}
+{% extends 'core/base.html' %}
 {% load static %}
+
+
+{% block page_overlay %}
+    {% if show_learning_language_dialog %}
+        <div class="page-loading-overlay initial-learning-language-overlay"
+            x-data="initialLearningLanguageDialog">
+            <section class="initial-learning-language-card" role="dialog" aria-modal="true" aria-labelledby="initial-learning-language-title">
+                <div class="initial-learning-language-icon">🌍</div>
+                <h2 id="initial-learning-language-title" data-i18n="initialLearningLanguageTitle">
+                    Which language are you learning?
+                </h2>
+                <p class="initial-learning-language-description" data-i18n="initialLearningLanguageText">
+                    Choose the language you want to use as your default for exercises.
+                </p>
+                <form method="post" action="{% url 'accounts:set_initial_learning_language' %}" @submit="persistSelection">
+                    {% csrf_token %}
+                    <input type="hidden" name="learning_language_id" :value="selectedId">
+                    <div class="language-dropdown initial-language-dropdown">
+                        <button type="button" class="language-toggle initial-language-toggle" :aria-expanded="menuOpen" @click="toggleMenu">
+                            <template x-if="selectedFlag">
+                                <img class="flag-icon" :src="selectedFlag" :alt="selectedLabel">
+                            </template>
+                            <span x-show="selectedId" x-text="selectedLabel"></span>
+                            <span x-show="!selectedId" data-i18n="initialLearningLanguagePlaceholder">
+                                Select a language
+                            </span>
+                        </button>
+                        <div class="language-menu initial-language-menu" x-cloak x-show="menuOpen" x-transition
+                                @click.outside="closeMenu" @keydown.escape.window="closeMenu">
+                            {% for language in registered_learning_languages %}
+                                <button
+                                    type="button"
+                                    class="learning-language-option"
+                                    data-language-id="{{ language.id }}"
+                                    data-lang="{{ language.code }}"
+                                    data-label="{{ language.original_name }}"
+                                    data-flag="{% static 'core/flags/' %}{{ language.code }}.svg"
+                                    @click="selectOption($el)">
+                                    <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
+                                    <span>{{ language.original_name }}</span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="submit" class="initial-learning-language-continue" :disabled="!selectedId" data-i18n="initialLearningLanguageContinue">
+                        Continue
+                    </button>
+                </form>
+            </section>
+        </div>
+    {% endif %}
+{% endblock %}
 
 {% block content %}
     <section class="hero-section">
@@ -53,7 +105,9 @@
                 placeholder="Example: Practice sein and haben in present tense with ich, du, er, sie and wir."></textarea>
 
             <div class="quick-options-grid">
-                <div class="field-group" x-data="learningLanguageSelector">
+                <div class="field-group" x-data="learningLanguageSelector"
+                        data-initial-language="{{ initial_learning_language_code }}"
+                        data-force-initial-language="{{ force_default_learning_language|yesno:'true,false' }}">
                     <label for="learning-language-toggle" data-i18n="exerciseLanguageLabel">Exercise language</label>
                     <div class="language-dropdown learning-language-dropdown" @click.outside="close">
                         <input type="hidden" id="learning-language-input" name="learning_language" :value="selected.language">
@@ -63,86 +117,17 @@
                         </button>
                         <div id="learning-language-menu" class="language-menu" x-cloak x-show="open" x-transition @keydown.escape.window="close">
                             <!-- Keep all eight existing option buttons. -->
-                            <button
-                                type="button"
-                                class="learning-language-option"
-                                data-lang="es"
-                                data-label="Español"
-                                data-flag="{% static 'exercises/flags/es.svg' %}"
-                                @click="selectOption($el)">
-                                <img src="{% static 'exercises/flags/es.svg' %}" alt="Español" class="flag-icon">
-                                <span>Español</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="learning-language-option"
-                                data-lang="en"
-                                data-label="English"
-                                data-flag="{% static 'exercises/flags/en.svg' %}"
-                                @click="selectOption($el)">
-                                <img src="{% static 'exercises/flags/en.svg' %}" alt="English" class="flag-icon">
-                                <span>English</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="learning-language-option"
-                                data-lang="de"
-                                data-label="Deutsch"
-                                data-flag="{% static 'exercises/flags/de.svg' %}"
-                                @click="selectOption($el)">
-                                <img src="{% static 'exercises/flags/de.svg' %}" alt="Deutsch" class="flag-icon">
-                                <span>Deutsch</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="learning-language-option"
-                                data-lang="ja"
-                                data-label="日本語"
-                                data-flag="{% static 'exercises/flags/ja.svg' %}"
-                                @click="selectOption($el)">
-                                <img src="{% static 'exercises/flags/ja.svg' %}" alt="日本語" class="flag-icon">
-                                <span>日本語</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="learning-language-option"
-                                data-lang="hi"
-                                data-label="हिन्दी"
-                                data-flag="{% static 'exercises/flags/hi.svg' %}"
-                                @click="selectOption($el)">
-                                <img src="{% static 'exercises/flags/hi.svg' %}" alt="हिन्दी" class="flag-icon">
-                                <span>हिन्दी</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="learning-language-option"
-                                data-lang="ro"
-                                data-label="Română"
-                                data-flag="{% static 'exercises/flags/ro.svg' %}"
-                                @click="selectOption($el)">
-                                <img src="{% static 'exercises/flags/ro.svg' %}" alt="Română" class="flag-icon">
-                                <span>Română</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="learning-language-option"
-                                data-lang="it"
-                                data-label="Italiano"
-                                data-flag="{% static 'exercises/flags/it.svg' %}"
-                                @click="selectOption($el)">
-                                <img src="{% static 'exercises/flags/it.svg' %}" alt="Italiano" class="flag-icon">
-                                <span>Italiano</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="learning-language-option"
-                                data-lang="pt"
-                                data-label="Português"
-                                data-flag="{% static 'exercises/flags/pt.svg' %}"
-                                @click="selectOption($el)">
-                                <img src="{% static 'exercises/flags/pt.svg' %}" alt="Português" class="flag-icon">
-                                <span>Português</span>
-                            </button>
+                            {% for language in all_languages %}
+                                <button type="button" class="learning-language-option"
+                                        data-language-id="{{ language.id }}"
+                                        data-lang="{{ language.code }}"
+                                        data-label="{{ language.original_name }}"
+                                        data-flag="{% static 'core/flags/' %}{{ language.code }}.svg"
+                                        @click="selectOption($el)">
+                                    <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
+                                    <span>{{ language.original_name }}</span>
+                                </button>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>

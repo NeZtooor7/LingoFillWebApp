@@ -1,0 +1,125 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+    <section class="hero-section">
+        <p class="eyebrow" data-i18n="loginEyebrow">
+            Welcome back
+        </p>
+
+        <h1 class="brand-title" data-i18n="loginTitle">
+            Log in to LingoFill
+        </h1>
+
+        <p class="intro hero-intro" data-i18n="loginIntro">
+            Log in to continue creating exercises and access your learning history.
+        </p>
+    </section>
+
+
+    {% if form.non_field_errors %}
+        <div class="error-box" role="alert">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+
+    <form
+        method="post"
+        action="{% url 'accounts:login' %}"
+        autocomplete="on">
+
+        {% csrf_token %}
+
+        {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+
+
+        <div class="field-group">
+            <label
+                for="login-identifier"
+                data-i18n="loginIdentifierLabel">
+                E-mail address or nickname
+            </label>
+
+            <input
+                id="login-identifier"
+                class="form-control"
+                type="text"
+                name="identifier"
+                value="{{ form.identifier.value|default:'' }}"
+                autocomplete="username"
+                required
+                autofocus
+                data-i18n-placeholder="loginIdentifierPlaceholder"
+                placeholder="E-mail address or nickname">
+
+            {% if form.identifier.errors %}
+                <div class="error-box">
+                    {% for error in form.identifier.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+
+        <div class="field-group">
+            <label
+                for="login-password"
+                data-i18n="passwordLabel">
+                Password
+            </label>
+
+            <input
+                id="login-password"
+                class="form-control"
+                type="password"
+                name="password"
+                autocomplete="current-password"
+                required
+                data-i18n-placeholder="passwordPlaceholder"
+                placeholder="Password">
+
+            {% if form.password.errors %}
+                <div class="error-box">
+                    {% for error in form.password.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+
+        <div class="exercise-actions">
+            <button
+                type="submit"
+                data-i18n="loginButton">
+                Log in
+            </button>
+
+            <a
+                class="action-button action-button-blue"
+                href="{% url 'accounts:register' %}"
+                data-i18n="createAccountButton">
+                Create an account
+            </a>
+        </div>
+
+    </form>
+
+
+    <div class="example-box">
+        <strong data-i18n="newToLingoFillTitle">
+            New to LingoFill?
+        </strong>
+
+        <p data-i18n="newToLingoFillText">
+            Create an account to save your exercises, answers and learning history.
+        </p>
+    </div>
+
+{% endblock %}

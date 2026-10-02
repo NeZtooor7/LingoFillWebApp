@@ -1,0 +1,230 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+    <h1 data-i18n="editAccountTitle">Change user data</h1>
+    <p class="intro" data-i18n="editAccountIntro">Update your account information and language preferences.</p>
+    <form method="post" id="account-edit-form">
+        {% csrf_token %}
+        <!-- =============================================================
+             Name
+             ============================================================= -->
+        <div class="registration-row registration-row-two">
+            <div class="field-group">
+                <label for="first-name" data-i18n="firstNameLabel">First name</label>
+                <input id="first-name" class="form-control" type="text" name="first_name" value="{{ form.first_name.value|default:'' }}"
+                        autocomplete="given-name" required data-i18n-placeholder="firstNamePlaceholder" placeholder="First name">
+                {% if form.first_name.errors %}
+                    <div class="error-box">
+                        {% for error in form.first_name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="field-group">
+                <label for="last-name" data-i18n="lastNameLabel">Last name</label>
+                <input id="last-name" class="form-control" type="text" name="last_name" value="{{ form.last_name.value|default:'' }}"
+                        autocomplete="family-name" required data-i18n-placeholder="lastNamePlaceholder" placeholder="Last name">
+                {% if form.last_name.errors %}
+                    <div class="error-box">
+                        {% for error in form.last_name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- =============================================================
+             Contact / nickname
+             ============================================================= -->
+        <div class="registration-row registration-row-three">
+            <div class="field-group">
+                <label for="email" data-i18n="emailLabel">E-mail address</label>
+                <input id="email" class="form-control" type="email" name="email" value="{{ form.email.value|default:'' }}"
+                        autocomplete="email" required data-i18n-placeholder="emailPlaceholder" placeholder="E-mail address">
+                {% if form.email.errors %}
+                    <div class="error-box">
+                        {% for error in form.email.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="field-group">
+                <label for="telephone" data-i18n="telephoneLabel">Telephone</label>
+                <input id="telephone" class="form-control" type="tel" name="telephone" value="{{ form.telephone.value|default:'' }}"
+                       autocomplete="tel" data-i18n-placeholder="telephonePlaceholder" placeholder="Telephone">
+            </div>
+            <div class="field-group">
+                <label for="nickname" data-i18n="nicknameLabel">Nickname</label>
+                <input id="nickname" class="form-control" type="text" name="nickname" value="{{ form.nickname.value|default:'' }}"
+                        autocomplete="username" required data-i18n-placeholder="nicknamePlaceholder" placeholder="Nickname">
+                {% if form.nickname.errors %}
+                    <div class="error-box">
+                        {% for error in form.nickname.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- =============================================================
+             Language preferences
+             ============================================================= -->
+        <div class="registration-row registration-row-languages">
+            <div class="field-group" x-data="registrationInterfaceLanguageSelector" data-initial-language-id="{{ form.preferred_interface_language_id.value|default:'' }}">
+                <label for="preferred-interface-language-toggle" data-i18n="preferredInterfaceLanguageIdLabel">
+                    Preferred interface language
+                </label>
+                <div class="language-dropdown">
+                    <input type="hidden" name="preferred_interface_language_id" :value="selectedId">
+                    <button id="preferred-interface-language-toggle" type="button" class="language-toggle" :aria-expanded="open" @click="toggle">
+                        <img class="flag-icon" :src="selectedFlag" :alt="selectedLabel">
+                        <span x-text="selectedLabel">
+                        </span>
+                    </button>
+                    <div class="language-menu" x-cloak x-show="open" x-transition @click.outside="close" @keydown.escape.window="close">
+                        {% for language in interface_languages %}
+                            <button type="button" class="learning-language-option registration-interface-language-option"
+                                    data-language-id="{{ language.id }}" data-label="{{ language.original_name }}"
+                                    data-flag="{% static 'core/flags/' %}{{ language.code }}.svg" @click="selectOption($el)">
+                                <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
+                                <span>
+                                    {{ language.original_name }}
+                                </span>
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if form.preferred_interface_language_id.errors %}
+                    <div class="error-box">
+                        {% for error in form.preferred_interface_language_id.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="field-group" id="learning-languages-multiselect" x-data="registrationLearningLanguagesMultiselect">
+                <label data-i18n="learningLanguagesLabel">Languages you want to learn</label>
+                <div class="multiselect">
+                    <div id="learning-languages-toggle" class="multiselect-box" role="button" tabindex="0" :aria-expanded="open"
+                            @click="toggle" @keydown.enter.prevent="toggle" @keydown.space.prevent="toggle" @keydown.escape="close">
+                        <span class="selected-options">
+                            <template x-for="item in selectedItems" :key="item.value">
+                                <span class="selected-pill">
+                                    <img :src="item.flag" :alt="item.label" class="flag-icon">
+                                    <span x-text="item.label">
+                                    </span>
+                                    <button type="button" @click.stop="remove(item.value)">
+                                        ×
+                                    </button>
+                                </span>
+                            </template>
+                        </span>
+                        <span class="multiselect-placeholder" x-show="selectedItems.length === 0" data-i18n="learningLanguagesPlaceholder">
+                            Select languages
+                        </span>
+                    </div>
+                    <div class="multiselect-menu" x-ref="menu" x-cloak x-show="open" x-transition @click.outside="close">
+                        {% for language in learning_languages %}
+                            <label class="multiselect-option">
+                                <input type="checkbox" name="learning_languages" value="{{ language.id }}" data-label="{{ language.original_name }}"
+                                       data-flag="{% static 'core/flags/' %}{{ language.code }}.svg" @change="refreshSelection"
+                                        {% if language.id|stringformat:"s" in selected_learning_languages %}checked{% endif %}>
+                                <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
+                                <span>{{ language.original_name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if form.learning_languages.errors %}
+                    <div class="error-box">
+                        {% for error in form.learning_languages.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- =============================================================
+             Optional password change
+             ============================================================= -->
+        <h2 data-i18n="changePasswordTitle">Change password</h2>
+        <p class="intro" data-i18n="changePasswordOptionalText">
+            Leave these fields empty to keep your current password.
+        </p>
+        <div class="registration-row registration-password-row">
+            <div class="field-group">
+                <label for="password1" data-i18n="newPasswordLabel">New password</label>
+                <input id="password1" class="form-control" type="password" name="password1" autocomplete="new-password"
+                        data-i18n-placeholder="newPasswordPlaceholder" placeholder="New password">
+                {% if form.password1.errors %}
+                    <div class="error-box">
+                        {% for error in form.password1.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="field-group">
+                <label for="password2" data-i18n="confirmNewPasswordLabel">Confirm new password</label>
+                <input id="password2" class="form-control" type="password" name="password2" autocomplete="new-password"
+                        data-i18n-placeholder="confirmNewPasswordPlaceholder" placeholder="Confirm new password">
+                {% if form.password2.errors %}
+                    <div class="error-box">
+                        {% for error in form.password2.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- =============================================================
+             Actions
+             ============================================================= -->
+        <div class="exercise-actions">
+            <button type="submit" class="action-button action-button-green" data-i18n="saveAccountChangesButton">
+                Save changes
+            </button>
+            <a href="{% url 'exercises:home' %}" class="action-button action-button-red" data-i18n="cancelButton">
+                Cancel
+            </a>
+        </div>
+    </form>
+    {% if account_changes_saved %}
+        <div class="account-save-overlay" x-data="{ open: true }" x-cloak x-show="open" x-transition @keydown.escape.window="open = false">
+            <section class="account-save-dialog" role="dialog" aria-modal="true" aria-labelledby="account-save-success-title">
+                <div class="account-save-dialog-icon" aria-hidden="true">
+                    ✅
+                </div>
+                <h2 id="account-save-success-title" data-i18n="accountChangesSavedTitle">
+                    Changes saved
+                </h2>
+                <p data-i18n="accountChangesSavedMessage">
+                    All your changes were saved successfully.
+                </p>
+                <button type="button" class="action-button action-button-green" @click="open = false" data-i18n="closeButton">
+                    Close
+                </button>
+            </section>
+        </div>
+    {% endif %}
+    {% if account_changes_error %}
+        <div class="account-save-overlay" x-data="{ open: true }" x-cloak x-show="open" x-transition @keydown.escape.window="open = false">
+            <section class="account-save-dialog" role="dialog" aria-modal="true" aria-labelledby="account-save-error-title">
+                <div class="account-save-dialog-icon" aria-hidden="true">
+                    ⚠️
+                </div>
+                <h2 id="account-save-error-title" data-i18n="accountChangesErrorTitle">
+                    Changes could not be saved
+                </h2>
+                <p data-i18n="accountChangesErrorMessage">
+                    Please review the highlighted fields and try again.
+                </p>
+                <button type="button" class="action-button action-button-red" @click="open = false" data-i18n="closeButton">
+                    Close
+                </button>
+            </section>
+        </div>
+    {% endif %}
+{% endblock %}

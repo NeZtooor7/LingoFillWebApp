@@ -1,0 +1,321 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <section class="hero-section">
+        <p class="eyebrow" data-i18n="registrationEyebrow">Join LingoFill</p>
+        <h1 class="brand-title" data-i18n="registrationTitle">Create your account</h1>
+        <p class="intro hero-intro" data-i18n="registrationIntro">Create an account to save your exercises, answers and learning history.</p>
+    </section>
+
+    {% if form.non_field_errors %}
+        <div class="error-box" role="alert">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form id="registration-form" method="post" action="{% url 'accounts:register' %}" autocomplete="on"
+            x-data="registrationPasswordValidator" @submit="validatePassword($event)"
+            @lingofill:language-changed.document="setLanguage($event.detail?.language)">
+        {% csrf_token %}
+
+        <div class="registration-row registration-row-two">
+            <div class="field-group">
+                <label for="first-name" data-i18n="firstNameLabel">First name</label>
+                <input
+                    id="first-name"
+                    class="form-control"
+                    type="text"
+                    name="first_name"
+                    value="{{ form.first_name.value|default:'' }}"
+                    autocomplete="given-name"
+                    required
+                    data-i18n-placeholder="firstNamePlaceholder"
+                    placeholder="First name">
+
+                {% if form.first_name.errors %}
+                    <div class="error-box">
+                        {% for error in form.first_name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="field-group">
+                <label for="last-name" data-i18n="lastNameLabel">Last name</label>
+                <input
+                    id="last-name"
+                    class="form-control"
+                    type="text"
+                    name="last_name"
+                    value="{{ form.last_name.value|default:'' }}"
+                    autocomplete="family-name"
+                    required
+                    data-i18n-placeholder="lastNamePlaceholder"
+                    placeholder="Last name">
+
+                {% if form.last_name.errors %}
+                    <div class="error-box">
+                        {% for error in form.last_name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="registration-row registration-row-three">
+            <div class="field-group">
+                <label for="email" data-i18n="emailLabel">E-mail address</label>
+                <input
+                    id="email"
+                    class="form-control"
+                    type="email"
+                    name="email"
+                    value="{{ form.email.value|default:'' }}"
+                    autocomplete="email"
+                    required
+                    data-i18n-placeholder="emailPlaceholder"
+                    placeholder="E-mail address">
+
+                {% if form.email.errors %}
+                    <div class="error-box">
+                        {% for error in form.email.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="field-group">
+                <label for="telephone" data-i18n="telephoneLabel">Telephone</label>
+
+                <input
+                    id="telephone"
+                    class="form-control"
+                    type="tel"
+                    name="telephone"
+                    value="{{ form.telephone.value|default:'' }}"
+                    autocomplete="tel"
+                    data-i18n-placeholder="telephonePlaceholder"
+                    placeholder="Telephone">
+            </div>
+            <div class="field-group">
+                <label for="nickname" data-i18n="nicknameLabel">Nickname</label>
+
+                <input
+                    id="nickname"
+                    class="form-control"
+                    type="text"
+                    name="nickname"
+                    value="{{ form.nickname.value|default:'' }}"
+                    autocomplete="username"
+                    required
+                    data-i18n-placeholder="nicknamePlaceholder"
+                    placeholder="Nickname">
+
+                {% if form.nickname.errors %}
+                    <div class="error-box">
+                        {% for error in form.nickname.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="registration-row registration-row-languages">
+            <div class="field-group" x-data="registrationInterfaceLanguageSelector"
+                data-initial-language-id="{{ form.preferred_interface_language_id.value|default:'' }}">
+                <label for="preferred-interface-language-toggle" data-i18n="preferredInterfaceLanguageIdLabel">
+                    Preferred interface language
+                </label>
+                <div class="language-dropdown">
+                    <input type="hidden" name="preferred_interface_language_id" :value="selectedId">
+                    <button
+                        id="preferred-interface-language-toggle"
+                        type="button"
+                        class="language-toggle"
+                        :aria-expanded="open"
+                        @click="toggle">
+                        <img class="flag-icon" :src="selectedFlag" :alt="selectedLabel">
+                        <span x-text="selectedLabel"></span>
+                    </button>
+                    <div class="language-menu" x-cloak x-show="open" x-transition @click.outside="close" @keydown.escape.window="close">
+                        {% for language in interface_languages %}
+                            <button
+                                type="button"
+                                class="learning-language-option registration-interface-language-option"
+                                data-language-id="{{ language.id }}"
+                                data-label="{{ language.original_name }}"
+                                data-flag="{% static 'core/flags/' %}{{ language.code }}.svg"
+                                @click="selectOption($el)">
+
+                                <img
+                                    src="{% static 'core/flags/' %}{{ language.code }}.svg"
+                                    alt="{{ language.original_name }}"
+                                    class="flag-icon">
+
+                                <span>{{ language.original_name }}</span>
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <span class="help-text" data-i18n="preferredInterfaceLanguageIdHelp">
+                    You can change the interface language at any time.
+                </span>
+                {% if form.preferred_interface_language_id.errors %}
+                    <div class="error-box">
+                        {% for error in form.preferred_interface_language_id.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="field-group" id="learning-languages-multiselect" x-data="registrationLearningLanguagesMultiselect">
+                <label data-i18n="learningLanguagesLabel">Languages you want to learn</label>
+                <div class="multiselect">
+                    <div id="learning-languages-toggle" class="multiselect-box" role="button" tabindex="0" :aria-expanded="open"
+                        @click="toggle" @keydown.enter.prevent="toggle" @keydown.space.prevent="toggle" @keydown.escape="close">
+                        <span class="selected-options">
+                            <template x-for="item in selectedItems" :key="item.value">
+                                <span class="selected-pill">
+                                    <img :src="item.flag" :alt="item.label" class="flag-icon">
+                                    <span x-text="item.label"></span>
+                                    <button type="button" :aria-label="`Remove ${item.label}`" @click.stop="remove(item.value)">×</button>
+                                </span>
+                            </template>
+                        </span>
+                        <span class="multiselect-placeholder" x-show="selectedItems.length === 0" data-i18n="learningLanguagesPlaceholder">
+                            Select languages
+                        </span>
+                    </div>
+                    <div class="multiselect-menu" x-ref="menu" x-cloak x-show="open" x-transition @click.outside="close">
+                        {% for language in learning_languages %}
+                            <label class="multiselect-option">
+                                <input
+                                    type="checkbox"
+                                    name="learning_languages"
+                                    value="{{ language.id }}"
+                                    data-label="{{ language.original_name }}"
+                                    data-flag="{% static 'core/flags/' %}{{ language.code }}.svg"
+                                    @change="refreshSelection"
+                                    {% if language.id|stringformat:"s" in selected_learning_languages %}
+                                        checked
+                                    {% endif %}>
+                                <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
+                                <span>
+                                    {{ language.original_name }}
+                                </span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <span
+                    class="help-text"
+                    data-i18n="learningLanguagesHelp">
+                    Select one or more languages you are interested in learning.
+                </span>
+                {% if form.learning_languages.errors %}
+                    <div class="error-box">
+                        {% for error in form.learning_languages.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="registration-row registration-password-row">
+            <div class="field-group">
+                <label for="password1" data-i18n="passwordLabel">Password</label>
+                <input id="password1" class="form-control" type="password" name="password1" autocomplete="new-password"
+                    data-i18n-placeholder="passwordPlaceholder" placeholder="Password" x-model="password"
+                    @input="if (passwordIsValid()) showPasswordError = false" required />
+                {% if form.password1.errors %}
+                    <div class="error-box">
+                        {% for error in form.password1.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="field-group">
+                <label for="password2" data-i18n="confirmPasswordLabel">Confirm password</label>
+                <input id="password2" class="form-control" type="password" name="password2" autocomplete="new-password"
+                    data-i18n-placeholder="confirmPasswordPlaceholder" placeholder="Confirm password" required />
+                {% if form.password2.errors %}
+                    <div class="error-box">
+                        {% for error in form.password2.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <p class="registration-password-error" role="alert" aria-live="polite" x-cloak x-show="showPasswordError" x-text="passwordMessage"></p>
+        </div>
+        <div class="exercise-actions">
+            <button id="create-account-button" type="submit" data-i18n="registerButton">
+                Create account
+            </button>
+            <a class="action-button action-button-red" href="{% url 'accounts:login' %}" data-i18n="alreadyHaveAccountButton">
+                I already have an account
+            </a>
+        </div>
+    </form>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('registrationPasswordValidator', () => ({
+                password: '',
+                showPasswordError: false,
+                currentLanguage: 'en',
+                messages: {
+                    en: 'Password must contain at least 10 characters, one uppercase letter, one lowercase letter, one number, and one special character (! @ # $ % & * ? - _ .).',
+                    es: 'La contraseña debe contener al menos 10 caracteres, una letra mayúscula, una letra minúscula, un número y un carácter especial (! @ # $ % & * ? - _ .).',
+                    de: 'Das Passwort muss mindestens 10 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen (! @ # $ % & * ? - _ .) enthalten.',
+                    ja: 'パスワードは10文字以上で、大文字、小文字、数字、特殊文字（! @ # $ % & * ? - _ .）をそれぞれ1文字以上含める必要があります。',
+                    hi: 'पासवर्ड में कम से कम 10 अक्षर, एक बड़ा अक्षर, एक छोटा अक्षर, एक संख्या और एक विशेष वर्ण (! @ # $ % & * ? - _ .) होना चाहिए।',
+                    ro: 'Parola trebuie să conțină cel puțin 10 caractere, o literă mare, o literă mică, o cifră și un caracter special (! @ # $ % & * ? - _ .).',
+                    it: 'La password deve contenere almeno 10 caratteri, una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale (! @ # $ % & * ? - _ .).',
+                    pt: 'A senha deve conter pelo menos 10 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial (! @ # $ % & * ? - _ .).'
+                },
+
+                init() {
+                    this.currentLanguage = window.LingoFillI18n?.getCurrentLanguage?.() || 'en';
+                },
+
+                setLanguage(language) {
+                    if (!language) {
+                        return;
+                    }
+
+                    this.currentLanguage = language.split('-')[0];
+                },
+
+                get passwordMessage() {
+                    return (this.messages[this.currentLanguage] || this.messages.en);
+                },
+
+                passwordIsValid() {
+                    return (this.password.length >= 10 &&
+                        /\p{Lu}/u.test(this.password) &&
+                        /\p{Ll}/u.test(this.password) &&
+                        /\p{N}/u.test(this.password) &&
+                        /[^\p{L}\p{N}\s]/u.test(this.password));
+                },
+
+                validatePassword(event) {
+                    if (this.passwordIsValid()) {
+                        this.showPasswordError = false;
+                        return;
+                    }
+
+                    event.preventDefault();
+                    this.showPasswordError = true;
+                    this.$nextTick(() => {
+                        document.getElementById('password1')?.focus();
+                    });
+                }
+            }));
+        });
+    </script>
+{% endblock %}

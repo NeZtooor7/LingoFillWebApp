@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+{% block content %}
+    <section class="history-detail-header">
+        <h1>
+            {% if exercise.title %}
+                {{ exercise.title }}
+            {% else %}
+                <span data-i18n="untitledExercise">Untitled exercise</span>
+            {% endif %}
+        </h1>
+        {% if exercise.ai_prompt %}
+            <div class="history-specification">
+                <strong data-i18n="aiPromptLabel">AI prompt:</strong>
+                <p>{{ exercise.ai_prompt }}</p>
+            </div>
+        {% endif %}
+        {% if advanced_options %}
+            <div class="history-advanced-options">
+                <h2 data-i18n="advancedOptionsSummary">Advanced options</h2>
+                <dl>
+                    {% for option in advanced_options %}
+                        <dt data-i18n="{{ option.label_key }}">{{ option.label_key }}</dt>
+                        <dd>{{ option.value }}</dd>
+                    {% endfor %}
+                </dl>
+            </div>
+        {% endif %}
+    </section>
+    <p class="intro">
+        <span data-i18n="correctionResultsIntro">You got</span>
+        <strong>{{ correct_count }}</strong>/<strong>{{ total_blanks }}</strong>
+        <span data-i18n="correctionResultsIntroEnd">blanks correct.</span>
+    </p>
+    <section class="correction-summary">
+        {% if wrong_count == 0 %}
+            <p class="success-message" data-i18n="allCorrectMessage">
+                Excellent. All your answers matched the correct answers.
+            </p>
+        {% else %}
+            <p class="warning-message">
+                <strong>{{ wrong_count }}</strong>
+                <span data-i18n="wrongAnswersMessage">answer(s) need review.</span>
+            </p>
+        {% endif %}
+    </section>
+    <section class="correction-list">
+        {% for sentence in results %}
+            <article class="correction-card {% if sentence.sentence_is_correct %}is-correct{% else %}has-errors{% endif %}">
+                <header class="correction-card-header">
+                    <h2>
+                        {{ sentence.number }}.
+                        {% if sentence.sentence_is_correct %}
+                            ✅
+                        {% else %}
+                            ❌
+                        {% endif %}
+                    </h2>
+                </header>
+                <p>
+                    <strong data-i18n="yourSentenceLabel">Your sentence:</strong>{{ sentence.user_sentence }}
+                </p>
+                <p>
+                    <strong data-i18n="correctSentenceLabel">Correct sentence:</strong>
+                    {{ sentence.correct_sentence }}
+                </p>
+                <div class="blank-results">
+                    {% for blank in sentence.blanks %}
+                        <div class="blank-result {% if blank.is_correct %}is-correct{% else %}has-errors{% endif %}">
+                            <p>
+                                <strong data-i18n="blankLabel">Blank</strong>
+                                {{ blank.position }}:
+                                {% if blank.is_correct %}
+                                    <span data-i18n="goodMatchLabel">Good match</span> ✅
+                                {% else %}
+                                    <span data-i18n="needsReviewLabel">Needs review</span> ❌
+                                {% endif %}
+                            </p>
+                            <p>
+                                <strong data-i18n="yourAnswerLabel">Your answer:</strong>
+                                {{ blank.user_answer }}
+                            </p>
+                            {% if not blank.is_correct %}
+                                <p>
+                                    <strong data-i18n="correctAnswersLabel">Correct answer(s):</strong>
+                                    {{ blank.correct_answers|join:", " }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if sentence.explanation %}
+                    <p class="history-explanation">
+                        <strong data-i18n="explanationLabel">Explanation:</strong>
+                        {{ sentence.explanation|linebreaksbr }}
+                    </p>
+                {% endif %}
+            </article>
+        {% endfor %}
+    </section>
+    <a href="{% url 'exercises:exercise_history' %}" class="action-button action-button-blue" data-i18n="closeButton">
+        Close
+    </a>
+{% endblock %}

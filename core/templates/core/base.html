@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LingoFill</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}" />
+    <link rel="icon" type="image/svg+xml" href="{% static 'core/branding/lingofill-icon.svg' %}" />
+</head>
+<body x-data :class="{ 'dark-mode': $store.theme.dark }">
+    <main class="page">
+        <div class="top-bar">
+            {% if user.is_authenticated %}
+                <!-- =========================================================
+                     LEFT SIDE
+                     ========================================================= -->
+                <div class="top-bar-left">
+                    <a href="{% url 'exercises:home' %}" class="theme-toggle top-bar-home-button">
+                        <span aria-hidden="true">🏠</span>
+                        <span data-i18n="homeButton">Home</span>
+                    </a>
+                </div>
+            {% endif %}
+            <!-- =============================================================
+                 RIGHT SIDE
+                 ============================================================= -->
+            <div class="top-bar-right">
+                {% if not user.is_authenticated %}
+                    <!-- =====================================================
+                         ANONYMOUS USER:
+                         Interface languages is directly visible.
+                         ===================================================== -->
+                    <div class="language-dropdown">
+                        <button id="language-toggle" type="button" class="theme-toggle interface-language-toggle"
+                                aria-haspopup="true" aria-expanded="false">
+                            <span aria-hidden="true">🌐</span>
+                            <span data-i18n="interfaceLanguageButton">Interface languages</span>
+                            {% if preferred_interface_language %}
+                                <img id="selected-language-flag" src="{% static 'core/flags/' %}{{ preferred_interface_language.code }}.svg"
+                                    alt="{{ preferred_interface_language.original_name }}" class="flag-icon current-interface-language-flag">
+                            {% endif %}
+                            <span aria-hidden="true">▾</span>
+                        </button>
+                        <div id="language-menu" class="language-menu hidden">
+                            {% for language in available_interface_languages %}
+                                <button type="button" class="language-option" data-lang="{{ language.code }}" data-label="{{ language.original_name }}"
+                                        data-flag="{% static 'core/flags/' %}{{ language.code }}.svg">
+                                    <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
+                                    <span>{{ language.original_name }}</span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                <!-- =========================================================
+                     LIGHT / DARK MODE
+                     Always visible
+                     ========================================================= -->
+                <button id="dark-mode-toggle" type="button" class="theme-toggle" @click="$store.theme.toggle()">
+                    <span class="theme-toggle-icon" aria-hidden="true" x-text="$store.theme.buttonIcon">
+                    </span>
+                    <span x-text="$store.theme.buttonLabel">Light mode</span>
+                </button>
+                {% if user.is_authenticated %}
+                    <!-- =====================================================
+                         AUTHENTICATED USER MENU
+                         ===================================================== -->
+                    <div class="main-menu-dropdown" x-data="{ mainMenuOpen: false }">
+                        <button type="button" class="theme-toggle main-menu-toggle" aria-haspopup="true" :aria-expanded="mainMenuOpen"
+                                @click="mainMenuOpen = !mainMenuOpen">
+                            <span data-i18n="menuButton">Menu</span>
+                            <span aria-hidden="true">▾</span>
+                        </button>
+                        <div class="main-menu" x-cloak x-show="mainMenuOpen" x-transition @click.outside="mainMenuOpen = false"
+                                @keydown.escape.window="mainMenuOpen = false">
+                            <!-- =============================================
+                                 CHANGE USER DATA
+                                 Will receive its URL when we implement it.
+                                 ============================================= -->
+                            <a href="{% url 'accounts:edit_account' %}" class="main-menu-item">
+                                <span aria-hidden="true">👤</span>
+                                <span data-i18n="changeUserDataButton">Change user data</span>
+                            </a>
+                            <!-- =============================================
+                                 EXERCISE HISTORY
+                                 ============================================= -->
+                            <a href="{% url 'exercises:exercise_history' %}" class="main-menu-item">
+                                <span aria-hidden="true">📚</span>
+                                <span data-i18n="exerciseHistoryButton">Exercise History</span>
+                            </a>
+                            <!-- =============================================
+                                 INTERFACE LANGUAGES
+
+                                 The language list opens as a cascade menu
+                                 beside this menu item.
+                                 ============================================= -->
+                            <div class="main-menu-language-row language-dropdown">
+                                <button id="language-toggle" type="button" class="main-menu-item main-menu-language-button"
+                                        aria-haspopup="true" aria-expanded="false">
+                                    <span aria-hidden="true">🌐</span>
+                                    <span data-i18n="interfaceLanguageButton">Interface languages</span>
+                                    {% if preferred_interface_language %}
+                                        <img id="selected-language-flag" src="{% static 'core/flags/' %}{{ preferred_interface_language.code }}.svg"
+                                                alt="{{ preferred_interface_language.original_name }}" class="flag-icon current-interface-language-flag">
+                                    {% endif %}
+                                    <span class="cascade-arrow" aria-hidden="true">◀</span>
+                                </button>
+                                <div id="language-menu" class="language-menu main-menu-language-submenu hidden">
+                                    {% for language in available_interface_languages %}
+                                        <button type="button" class="language-option" data-lang="{{ language.code }}"
+                                                data-label="{{ language.original_name }}" data-flag="{% static 'core/flags/' %}{{ language.code }}.svg">
+                                            <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
+                                            <span>{{ language.original_name }}</span>
+                                        </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- =============================================
+                                 LOG OUT
+                                 ============================================= -->
+                            <form method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="main-menu-item main-menu-form-button">
+                                    <span aria-hidden="true">↪</span>
+                                    <span data-i18n="logoutButton">Log out</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- ================================================================
+             PAGE CONTENT
+             ================================================================ -->
+        <section class="card">
+            {% block content %}
+            {% endblock %}
+        </section>
+    </main>
+    {% block page_overlay %}
+    {% endblock %}
+    <!-- ====================================================================
+         GLOBAL LOADING OVERLAY
+         ==================================================================== -->
+    <div id="page-loading-overlay" class="page-loading-overlay" x-cloak x-show="$store.loading.active" aria-live="polite"
+            aria-busy="true">
+        <div class="loading-box">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <p id="loading-message" class="loading-message" x-text="$store.loading.message"></p>
+        </div>
+    </div>
+    <!-- ====================================================================
+         JAVASCRIPT CONFIGURATION
+         ==================================================================== -->
+    <script>
+        window.LINGOFILL_LOCALES_URL = "{% static 'core/locales/' %}";
+        window.LINGOFILL_PREFERRED_INTERFACE_LANGUAGE = "{{ preferred_interface_language_code|default:'en'|escapejs }}";
+        window.LINGOFILL_FORCE_PREFERRED_INTERFACE_LANGUAGE = "{{ force_preferred_interface_language|yesno:'true,false' }}" === "true";
+        window.LINGOFILL_SUPPORTED_INTERFACE_LANGUAGES = [
+            {% for language in available_interface_languages %}
+                "{{ language.code|escapejs }}"
+                {% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+    </script>
+    <!-- ====================================================================
+         JAVASCRIPT FILES
+         ==================================================================== -->
+    <script defer src="{% static 'core/vendor/i18next/i18next.min.js' %}"></script>
+    <script defer src="{% static 'core/vendor/i18next/i18nextHttpBackend.min.js' %}"></script>
+    <script defer src="{% static 'core/language-manager.js' %}"></script>
+    <script defer src="{% static 'core/i18n.js' %}"></script>
+    <script defer src="{% static 'core/alpine/stores.js' %}"></script>
+    <script defer src="{% static 'core/alpine/focus-multiselect.js' %}"></script>
+    <script defer src="{% static 'core/alpine/learning-language.js' %}"></script>
+    <script defer src="{% static 'core/alpine/clipboard-exercise.js' %}"></script>
+    <script defer src="{% static 'core/alpine/registration-languages.js' %}"></script>
+    <script defer src="{% static 'core/alpine/initial-learning-language.js' %}"></script>
+    <script defer src="{% static 'core/alpine/exercise-history.js' %}"></script>
+    <script defer src="{% static 'core/vendor/alpine/alpine.min.js' %}"></script>
+</body>
+</html>

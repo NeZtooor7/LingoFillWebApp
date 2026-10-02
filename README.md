@@ -1,275 +1,200 @@
 # LingoFill
 
-**LingoFill** is a local-first Django web app for creating AI-assisted fill-in-the-blank language exercises.
+LingoFill is a Django web application for creating, completing, correcting, saving, and reviewing fill-in-the-blank language exercises.
 
-The app supports two workflows:
+It supports both AI-generated and manually entered exercises, multilingual interface preferences, persistent user accounts, PostgreSQL-backed exercise history, and profile/language settings.
 
-1. **AI mode** (default) — describe what you want to practice, choose the exercise language, level, number of sentences, blanks, and grammar focus. The app generates a structured fill-in-the-blank exercise using an LLM API.
-2. **Manual mode** — paste your own sentences using underscores (`_`) and turn them into an interactive exercise.
+## Main features
 
-LingoFill is designed for language learning, grammar drills, vocabulary practice, verb conjugation, and personalized cloze-style exercises.
-
----
-
-## Features
-
-- Add other supported languages like Chinese, French, Arabic, Russian, Persian, Afrikaans, Korean, Quechua, etc.
 - AI-generated fill-in-the-blank exercises
 - Manual fill-in-the-blank exercise creation
-- Multiple blanks per sentence
-- Multiple sentences per exercise
-- Local answer checking against generated `correct_answers`
-- AI explanations only for incorrect answers
-- Correction results page with correct and wrong matches
-- Separate **interface language** and **exercise language**
-- Multilingual interface
-- Exercise language selector
-- Light/dark mode, with dark mode as the default
-- Flag-based language dropdowns
-- Custom multiselect field for grammar focus
-- Clipboard support for completed manual exercises
-- Input validation for manual sentence format
-- Local-first design
-- Windows support with Waitress and Apache reverse proxy
+- Local answer checking against stored/generated correct answers
+- AI explanations for incorrect answers
+- PostgreSQL persistence for users, language preferences, exercises, and history
+- User registration, login, logout, and persistent sessions
+- Account/profile editing
+- Preferred interface language per user
+- Default learning language per user
+- Multiple learning languages per user
+- Saved exercise history with detail view
+- Exercise title editing and deletion
+- Client-side history search and pagination
+- Light and dark mode
+- DB-driven interface-language availability
+- Local static assets for flags and interface resources
+- Windows development and local serving with Django, Waitress, and Apache
 
----
+## Supported interface languages
 
-## Supported Interface Languages
+The current interface supports:
 
-The webpage interface can be displayed in:
+- English (`en`)
+- Spanish (`es`)
+- German (`de`)
+- Japanese (`ja`)
+- Hindi (`hi`)
+- Romanian (`ro`)
+- Italian (`it`)
+- Portuguese (`pt`)
 
-- Spanish
-- English
-- German
-- Japanese
-- Hindi
-- Romanian
-- Italian
-- Portuguese
-
-The **interface language** is also used as the explanation language for correction feedback.
-
----
-
-## Supported Exercise Languages
-
-The AI exercise generator can create exercises in:
-
-- Spanish
-- English
-- German
-- Japanese
-- Hindi
-- Romanian
-- Italian
-- Portuguese
-
-The **exercise language** is independent from the interface language.
-
-Example:
-
-- Interface language: English
-- Exercise language: German
-- Result: German exercises with English explanations
-
-Another example:
-
-- Interface language: Portuguese
-- Exercise language: Japanese
-- Result: Japanese exercises with Portuguese explanations
-
----
-
-## How It Works
-
-### AI Mode
-
-The user enters a goal such as:
+Interface-language availability is read from the database. Each enabled language also requires the corresponding frontend resources:
 
 ```text
-Practice sein and haben in present tense with ich, du, er, sie and wir.
+core/static/core/locales/<code>.json
+core/static/core/flags/<code>.svg
 ```
 
-Then the user selects:
+The interface language is independent from the language being learned.
 
-- Exercise language
-- Level
-- Number of sentences
-- Number of blanks
-- Focus areas such as verbs, articles, pronouns, tenses, or expressions
-- Optional advanced fields such as verbs, subjects, tense, topic, and expressions
+## Architecture
 
-The app sends a structured request to the LLM API and expects a structured response.
+### `core`
 
-The generated response contains:
+Project-wide configuration and shared presentation/infrastructure:
 
-- Exercise title
-- Language
-- Level
-- Instructions
-- Sentence templates
-- Full completed sentences
-- Blank metadata
-- Correct answers
-- Grammar focus
+- Django settings
+- project URL configuration
+- shared base template
+- shared CSS and JavaScript
+- Alpine components/stores
+- i18next language management
+- local translation JSON files
+- flags and branding assets
 
-Example structure:
+### `accounts`
 
-```json
-{
-  "exercise_title": "Present tense practice",
-  "language": "German",
-  "level": "A1",
-  "instructions": "Complete the sentences with the correct word.",
-  "sentences": [
-    {
-      "number": 1,
-      "template": "- Ich _ müde.",
-      "full_sentence": "Ich bin müde.",
-      "blanks": [
-        {
-          "position": 1,
-          "correct_answers": ["bin"],
-          "grammar_focus": "sein, present tense, ich"
-        }
-      ]
-    }
-  ]
-}
-```
+Authentication and user profile concerns:
 
-### Correction Flow
+- custom user model
+- registration
+- login/logout
+- profile editing
+- preferred interface language
+- default learning language
+- user-learning-language relationships
+- account-level language context
 
-When the user submits an AI-generated exercise:
+### `exercises`
 
-1. Django checks the user's answers locally.
-2. If an answer matches one of the `correct_answers`, it is marked as correct.
-3. If an answer does not match, only the wrong blank is sent to the correction model.
-4. The correction model explains the mistake in the selected interface language.
-5. The correction results page shows:
-   - User sentence
-   - Correct sentence
-   - Correct matches
-   - Wrong answers
-   - Correct answers
-   - AI explanations for mistakes
+Exercise workflow and persistence:
 
-This keeps API usage low because correct answers do not require an extra model call.
+- manual exercise creation
+- AI exercise generation
+- correction flow
+- answer/explanation handling
+- exercise persistence
+- exercise history
+- history detail, title editing, deletion, search, and pagination
 
----
+### PostgreSQL
 
-## Manual Mode
+PostgreSQL is the durable application database and is accessed through Django/Psycopg 3.
 
-Manual mode accepts plain text input.
+The database stores user/account information, supported languages, user-learning-language relationships, exercises, exercise items, and related history data.
 
-Each line must:
+## Technology stack
 
-1. Start with `- `
-2. Contain at least one underscore `_`
-3. Have text before and after the blank
-
-Valid example:
-
-```text
-- Ich _ müde.
-- Du _ glücklich.
-- Er _ zu Hause.
-```
-
-The app turns each underscore into a text input.
-
-Example exercise:
-
-```text
-1. Ich [____] müde.
-2. Du [____] glücklich.
-3. Er [____] zu Hause.
-```
-
-After filling the blanks with `bin`, `bist`, and `ist`, the clipboard output becomes:
-
-```text
-1. Ich bin müde.
-2. Du bist glücklich.
-3. Er ist zu Hause.
-```
-
----
-
-## Tech Stack
-
-- Python
-- Django
+- Python 3
+- Django 5.2
+- PostgreSQL
+- Psycopg 3
 - OpenAI API
 - Pydantic
 - python-dotenv
 - HTML
 - CSS
 - JavaScript
+- Alpine.js
+- i18next
 - Waitress
 - Apache HTTP Server
-- WhiteNoise
 
----
+## Project structure
 
-## Requirements
-
-- Python 3.10+
-- Django 5.x
-- OpenAI Python SDK
-- Pydantic
-- python-dotenv
-- Waitress
-- WhiteNoise
-
-Install dependencies with:
-
-```bash
-pip install -r requirements.txt
+```text
+LingoFillWebApp/
+├── accounts/
+│   ├── models/
+│   ├── templates/accounts/
+│   ├── context_processors.py
+│   ├── forms.py
+│   ├── urls.py
+│   └── views.py
+├── core/
+│   ├── static/core/
+│   │   ├── alpine/
+│   │   ├── branding/
+│   │   ├── flags/
+│   │   ├── locales/
+│   │   ├── vendor/
+│   │   ├── i18n.js
+│   │   ├── language-manager.js
+│   │   └── styles.css
+│   ├── templates/core/
+│   │   └── base.html
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── exercises/
+│   ├── models/
+│   ├── templates/exercises/
+│   ├── forms.py
+│   ├── llm_service.py
+│   ├── urls.py
+│   └── views.py
+├── staticfiles/
+├── .env
+├── .env.example
+├── manage.py
+├── README.md
+└── requirements.txt
 ```
 
----
+## Environment configuration
 
-## Environment Variables
+Create a `.env` file in the project root. Do not commit real credentials or secrets.
 
-Create a `.env` file in the project root.
+Typical variables used by the current project include:
 
 ```env
-OPENAI_API_KEY=your-real-api-key-here
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+DB_HOST=127.0.0.1
+DB_PORT=5432
 
+OPENAI_API_KEY=
 OPENAI_GENERATION_MODEL=gpt-5-nano
 OPENAI_CORRECTION_MODEL=gpt-5-mini
-
 OPENAI_TIMEOUT_SECONDS=45
+
+EXERCISE_SIGNING_SALT=
+DJANGO_SECRET_KEY=
 ```
 
-The recommended budget-friendly setup is:
+If the Django secret key is configured from the environment in your current `settings.py`, add its environment variable here as well and keep the real value out of Git.
 
-- `gpt-5-nano` for exercise generation
-- `gpt-5-mini` for correction explanations
+## PostgreSQL setup
 
-Correct answers are checked locally first. The correction model is only called for wrong answers. You can copy and paste from the `.env.example` the structure of your new `.env` file and replace the values of the keys with what you need.
+Create a PostgreSQL database and an application user with the permissions required by LingoFill.
 
-Never commit your real `.env` file.
+Then configure the connection through the `.env` variables above.
 
----
+Before running the application, verify the database is reachable:
 
-## `.gitignore`
-
-Recommended entries:
-
-```gitignore
-.env
-db.sqlite3
-__pycache__/
-*.pyc
-staticfiles/
-.venv/
+```bash
+python manage.py check
 ```
 
----
+If the project contains managed migrations, apply them with:
 
-## Local Development Setup
+```bash
+python manage.py migrate
+```
+
+Some project tables may be represented by Django models mapped to an existing PostgreSQL schema. Keep the actual model/schema strategy synchronized with the database before using migration commands that would alter existing tables.
+
+## Installation
 
 Create a virtual environment:
 
@@ -277,24 +202,10 @@ Create a virtual environment:
 python -m venv .venv
 ```
 
-Activate it.
-
-### Windows PowerShell
+Activate it on Windows PowerShell:
 
 ```powershell
-.venv\Scripts\Activate.ps1
-```
-
-### Windows CMD
-
-```cmd
-.venv\Scripts\activate.bat
-```
-
-### macOS/Linux
-
-```bash
-source .venv/bin/activate
+.\.venv\Scripts\Activate.ps1
 ```
 
 Install dependencies:
@@ -303,231 +214,188 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Run the development server:
+Create/configure `.env`, make sure PostgreSQL is running, and then run:
 
 ```bash
+python manage.py check
 python manage.py runserver
 ```
 
-Open the app:
+Use the URL configured by the project URL patterns and shown by the Django development server.
+
+## Authentication and sessions
+
+LingoFill uses Django authentication with the custom `accounts.User` model.
+
+The application supports:
+
+- registration
+- login using the configured user identity
+- logout
+- authenticated-only exercise/history access
+- persistent login sessions
+- account editing
+- preferred interface language
+- one or more learning languages
+- an optional default learning language
+
+Private exercise/history queries must always be scoped to the authenticated user.
+
+## Exercise workflow
+
+### Manual mode
+
+Manual mode accepts lines containing underscores as blanks.
+
+Example:
 
 ```text
-http://127.0.0.1:8000/LingoFillWebApp/
+- Ich _ müde.
+- Du _ glücklich.
 ```
 
----
+The app converts each underscore into an input field.
 
-## Static Files
+### AI mode
 
-During development with `runserver`, Django serves static files automatically.
+The user describes what they want to practice and can choose exercise options such as:
 
-For Apache/Waitress usage, collect static files:
+- learning language
+- CEFR level
+- sentence count
+- blanks
+- grammar focus
+- verbs
+- subjects
+- tense
+- topic
+- expressions
+
+The server generates a structured exercise and keeps API credentials server-side.
+
+### Correction
+
+Correct answers are checked against the generated/stored answer data. Incorrect answers can receive AI-generated explanations in the selected interface language.
+
+### Saving and history
+
+Authenticated users can save exercises and revisit them through Exercise History.
+
+History supports:
+
+- reverse-chronological saved exercises
+- title
+- creation date/time
+- learning language
+- detail view
+- title editing
+- deletion
+- client-side search
+- configurable items per page
+- pagination
+
+History access must always enforce ownership through `request.user`.
+
+## Interface language behavior
+
+The interface language and learning language are separate settings.
+
+The preferred interface language is stored on the user account. Supported interface-language codes are provided from the database to the frontend, and i18next loads the matching locale JSON file.
+
+Changing interface language must not silently change the user's learning language.
+
+## Static files and branding
+
+Shared static files belong under:
+
+```text
+core/static/core/
+```
+
+Branding assets should live under:
+
+```text
+core/static/core/branding/
+```
+
+For production-like local serving, collect static files:
 
 ```bash
 python manage.py collectstatic
 ```
 
-This copies files from:
-
-```text
-exercises/static/
-```
-
-to:
-
-```text
-staticfiles/
-```
-
----
-
 ## Running with Waitress
 
-From the project root:
+From the project root, the current Django project module is `core`, so the WSGI target is:
+
+```text
+core.wsgi:application
+```
+
+Example:
 
 ```powershell
-.\.venv\Scripts\waitress-serve.exe --listen=127.0.0.1:8001 fillblanker.wsgi:application
+.\.venv\Scripts\waitress-serve.exe --listen=127.0.0.1:8001 core.wsgi:application
 ```
 
-Then open:
+## Running through Apache on Windows
 
-```text
-http://127.0.0.1:8001/LingoFillWebApp/
-```
-
-The WSGI import target is:
-
-```text
-fillblanker.wsgi:application
-```
-
----
-
-## Running with Apache on Windows
-
-This project can be served locally through Apache using a reverse proxy.
-
-Expected final URL:
-
-```text
-http://localhost/LingoFillWebApp/
-```
-
-General flow:
+A local production-like flow can use:
 
 ```text
 Browser → Apache → Waitress → Django
 ```
 
-Apache forwards:
+Apache can reverse-proxy application requests to Waitress and serve collected static assets from `staticfiles/`.
 
-```text
-/LingoFillWebApp/
-```
+Keep Apache-specific paths and proxy rules in deployment/local-server documentation rather than hard-coding them into Django application logic.
 
-to Waitress running at:
+## Security notes
 
-```text
-http://127.0.0.1:8001/LingoFillWebApp/
-```
+- Never commit `.env`.
+- Never expose OpenAI API keys to browser JavaScript or templates.
+- Never store plain-text passwords.
+- Use Django password hashing/authentication APIs.
+- Validate persistent/security-sensitive values on the backend even when Alpine/JavaScript also validates them.
+- Scope private exercise/history operations to `request.user`.
+- Use POST + CSRF protection for mutating actions such as logout and deletion.
+- Keep Django secret keys and signing salts outside source control.
 
-Static files can be served by Apache from:
+## Development checks
 
-```text
-staticfiles/
-```
-
-After changing CSS or JavaScript, run:
-
-```bash
-python manage.py collectstatic
-```
-
-Then restart Apache/Waitress if needed.
-
----
-
-## Suggested Project Structure
-
-```text
-LingoFill/
-├── exercises/
-│   ├── static/
-│   │   └── exercises/
-│   │       ├── flags/
-│   │       ├── clipboard.js
-│   │       ├── i18n.js
-│   │       ├── learning_language.js
-│   │       ├── multiselect.js
-│   │       ├── styles.css
-│   │       └── theme.js
-│   ├── templates/
-│   │   └── exercises/
-│   │       ├── base.html
-│   │       ├── correction_results.html
-│   │       ├── exercise.html
-│   │       └── home.html
-│   ├── forms.py
-│   ├── llm_schemas.py
-│   ├── llm_service.py
-│   ├── urls.py
-│   └── views.py
-├── fillblanker/
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── staticfiles/
-├── .env.example
-├── .gitignore
-├── manage.py
-├── README.md
-└── requirements.txt
-```
-
----
-
-## Important Design Notes
-
-### No database required for core usage
-
-LingoFill does not need a database for the main exercise flow.
-
-Generated exercise data can be signed and sent back through the form for correction, avoiding the need to store exercises in a database.
-
-### API keys stay server-side
-
-The OpenAI API keys are used only in Django/Python.
-
-They must never be placed in:
-
-- HTML templates
-- JavaScript files
-- GitHub commits
-- Browser code
-
-### Manual mode works without an API key
-
-Manual mode does not require OpenAI API access.
-
-This makes the project usable even without paid API usage.
-
-### AI mode requires an API key
-
-AI exercise generation and AI explanations require OpenAI API access.
-
----
-
-## Development Workflow
-
-While coding:
+Before considering a change complete, run:
 
 ```bash
-python manage.py runserver
+python manage.py check
 ```
 
-Use:
+Then manually test at least:
 
-```text
-http://127.0.0.1:8000/LingoFillWebApp/
-```
+- registration
+- login
+- logout
+- persistent session behavior
+- account editing
+- preferred interface language
+- default learning language
+- manual exercise creation
+- AI exercise generation
+- correction
+- saving
+- history list/detail
+- title editing
+- deletion
+- history search/pagination
+- dark/light mode
+- all supported interface languages
 
-After changing static files and testing with Apache/Waitress:
+## Known limitations / next steps
 
-```bash
-python manage.py collectstatic
-```
-
-For local production-like testing:
-
-```powershell
-.\.venv\Scripts\waitress-serve.exe --listen=127.0.0.1:8001 fillblanker.wsgi:application
-```
-
-Use:
-
-```text
-http://localhost/LingoFillWebApp/
-```
-
-if Apache is configured as a reverse proxy.
-
----
-
-## Possible Future Improvements
-
-- Mock AI mode for offline testing
-- Export exercises as PDF
-- Save exercise templates
-- Add hints
-- Add keyboard shortcuts
-- Add user-created exercise collections
-- Add progress tracking
-- Add Docker support
-- Add unit tests for schema validation and correction logic
-- Add dynamic placeholders based on selected exercise language
-
----
+- A database language entry still needs the matching locale JSON and flag asset before it can be used correctly by the frontend.
+- AI functionality requires a configured API key and network access.
+- Local Apache/Waitress deployment configuration is environment-specific.
+- Automated test coverage can be expanded further as the project evolves.
 
 ## License
 
-This project is intended for educational and portfolio purposes.
+This project is intended for educational and portfolio use unless a different license is added to the repository.
