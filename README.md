@@ -170,6 +170,9 @@ OPENAI_TIMEOUT_SECONDS=45
 
 EXERCISE_SIGNING_SALT=
 DJANGO_SECRET_KEY=
+
+DJANGO_ALLOWED_HOSTS=
+DJANGO_CSRF_TRUSTED_ORIGINS=
 ```
 
 If the Django secret key is configured from the environment in your current `settings.py`, add its environment variable here as well and keep the real value out of Git.

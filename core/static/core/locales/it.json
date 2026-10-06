@@ -38,7 +38,7 @@
     "manualModeIntro": "Hai già le tue frasi? Incollale qui con underscore.",
     "textareaLabel": "Frasi con spazi",
     "createButton": "Crea esercizio",
-    "textareaHelp": "Scrivi una frase per riga. Ogni riga deve iniziare con "- " e contenere almeno un underscore "_".",
+    "textareaHelp": "Scrivi una frase per riga. Ogni riga deve iniziare con \"- \" e contenere almeno un underscore \"_\".",
     "exampleLabel": "Esempio:",
     "exerciseTitle": "Completa le frasi",
     "exerciseIntro": "Inserisci le parole mancanti e poi copia il testo completo.",

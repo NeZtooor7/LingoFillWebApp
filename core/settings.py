@@ -7,7 +7,12 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '192.168.0.*', '192.168.1.*', 'windows-lenovo-nest']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ["DJANGO_ALLOWED_HOSTS"].split(",")
+    if host.strip()
+]
+
 AUTH_USER_MODEL = "accounts.User"
 
 INSTALLED_APPS = [
@@ -33,6 +38,19 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ["DJANGO_CSRF_TRUSTED_ORIGINS"].split(",")
+    if origin.strip()
+]
+
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
+)
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
