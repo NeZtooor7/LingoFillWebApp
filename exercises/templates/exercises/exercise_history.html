@@ -1,4 +1,6 @@
 {% extends 'core/base.html' %}
+{% load static %}
+
 {% block content %}
 <div x-data="exerciseHistory">
     <h1 data-i18n="exerciseHistoryTitle">Exercise History</h1>
@@ -145,4 +147,7 @@
         </p>
     {% endif %}
 </div>
+{% endblock %}
+{% block page_javascript %}
+    <script defer src="{% static 'core/alpine/exercise-history.js' %}"></script>
 {% endblock %}

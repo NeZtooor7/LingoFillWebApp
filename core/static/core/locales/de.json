@@ -154,5 +154,6 @@
     "accountChangesSavedTitle": "Änderungen gespeichert",
     "accountChangesSavedMessage": "Alle Änderungen wurden erfolgreich gespeichert.",
     "accountChangesErrorTitle": "Änderungen konnten nicht gespeichert werden",
-    "accountChangesErrorMessage": "Bitte überprüfe die markierten Felder und versuche es erneut."
+    "accountChangesErrorMessage": "Bitte überprüfe die markierten Felder und versuche es erneut.",
+    "passwordValidationMessage": "Das Passwort muss mindestens 10 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen (! @ # $ % & * ? - _ .) enthalten."
 }

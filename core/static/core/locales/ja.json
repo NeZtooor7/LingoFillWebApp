@@ -154,5 +154,6 @@
     "accountChangesSavedTitle": "変更を保存しました",
     "accountChangesSavedMessage": "すべての変更が正常に保存されました。",
     "accountChangesErrorTitle": "変更を保存できませんでした",
-    "accountChangesErrorMessage": "入力内容を確認して、もう一度お試しください。"
+    "accountChangesErrorMessage": "入力内容を確認して、もう一度お試しください。",
+    "passwordValidationMessage": "パスワードは10文字以上で、大文字、小文字、数字、特殊文字（! @ # $ % & * ? - _ .）をそれぞれ1文字以上含める必要があります。"
 }

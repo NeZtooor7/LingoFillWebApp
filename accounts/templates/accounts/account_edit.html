@@ -3,7 +3,8 @@
 {% block content %}
     <h1 data-i18n="editAccountTitle">Change user data</h1>
     <p class="intro" data-i18n="editAccountIntro">Update your account information and language preferences.</p>
-    <form method="post" id="account-edit-form">
+    <form id="account-edit-form" method="post" x-data="passwordValidator(true)" @submit="validatePassword($event)"
+            @lingofill:language-changed.document="setLanguage($event.detail?.language)">
         {% csrf_token %}
         <!-- =============================================================
              Name
@@ -157,7 +158,8 @@
             <div class="field-group">
                 <label for="password1" data-i18n="newPasswordLabel">New password</label>
                 <input id="password1" class="form-control" type="password" name="password1" autocomplete="new-password"
-                        data-i18n-placeholder="newPasswordPlaceholder" placeholder="New password">
+                        data-i18n-placeholder="newPasswordPlaceholder" placeholder="New password" x-model="password"
+                        @input="if (passwordIsValid()) showPasswordError = false">
                 {% if form.password1.errors %}
                     <div class="error-box">
                         {% for error in form.password1.errors %}
@@ -178,6 +180,7 @@
                     </div>
                 {% endif %}
             </div>
+            <p class="registration-password-error" role="alert" aria-live="polite" x-cloak x-show="showPasswordError" x-text="passwordMessage"></p>
         </div>
         <!-- =============================================================
              Actions
@@ -227,4 +230,8 @@
             </section>
         </div>
     {% endif %}
+{% endblock %}
+{% block page_javascript %}
+    <script defer src="{% static 'core/alpine/registration-languages.js' %}"></script>
+    <script defer src="{% static 'core/alpine/password-validator.js' %}"></script>
 {% endblock %}

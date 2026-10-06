@@ -154,5 +154,6 @@
     "accountChangesSavedTitle": "Modifiche salvate",
     "accountChangesSavedMessage": "Tutte le modifiche sono state salvate correttamente.",
     "accountChangesErrorTitle": "Impossibile salvare le modifiche",
-    "accountChangesErrorMessage": "Controlla i campi indicati e riprova."
+    "accountChangesErrorMessage": "Controlla i campi indicati e riprova.",
+    "passwordValidationMessage": "La password deve contenere almeno 10 caratteri, una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale (! @ # $ % & * ? - _ .)."
 }

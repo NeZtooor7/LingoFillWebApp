@@ -318,3 +318,11 @@
         </details>
     </section>
 {% endblock %}
+{% block page_javascript %}
+    <script defer src="{% static 'core/alpine/focus-multiselect.js' %}"></script>
+    <script defer src="{% static 'core/alpine/learning-language.js' %}"></script>
+
+    {% if show_learning_language_dialog %}
+        <script defer src="{% static 'core/alpine/initial-learning-language.js' %}"></script>
+    {% endif %}
+{% endblock %}

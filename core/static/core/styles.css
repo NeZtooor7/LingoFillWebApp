@@ -1207,19 +1207,28 @@ body.dark-mode .initial-learning-language-overlay {
     }
 
     .top-bar {
-        align-items: stretch;
-        flex-direction: column;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.4rem;
     }
 
     .top-bar-left {
-        align-self: flex-start;
+        flex-shrink: 0;
     }
 
     .top-bar-right {
-        width: 100%;
-        margin-left: 0;
-        flex-wrap: wrap;
-        justify-content: flex-end;
+        width: auto;
+        margin-left: auto;
+        flex-wrap: nowrap;
+        gap: 0.4rem;
+    }
+
+    .top-bar .theme-toggle {
+        min-height: 38px;
+        height: 38px;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+        white-space: nowrap;
     }
 
     .main-menu-language-submenu {

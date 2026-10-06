@@ -18,7 +18,7 @@
     {% endif %}
 
     <form id="registration-form" method="post" action="{% url 'accounts:register' %}" autocomplete="on"
-            x-data="registrationPasswordValidator" @submit="validatePassword($event)"
+            x-data="passwordValidator(false)" @submit="validatePassword($event)"
             @lingofill:language-changed.document="setLanguage($event.detail?.language)">
         {% csrf_token %}
 
@@ -262,60 +262,8 @@
             </a>
         </div>
     </form>
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('registrationPasswordValidator', () => ({
-                password: '',
-                showPasswordError: false,
-                currentLanguage: 'en',
-                messages: {
-                    en: 'Password must contain at least 10 characters, one uppercase letter, one lowercase letter, one number, and one special character (! @ # $ % & * ? - _ .).',
-                    es: 'La contraseña debe contener al menos 10 caracteres, una letra mayúscula, una letra minúscula, un número y un carácter especial (! @ # $ % & * ? - _ .).',
-                    de: 'Das Passwort muss mindestens 10 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen (! @ # $ % & * ? - _ .) enthalten.',
-                    ja: 'パスワードは10文字以上で、大文字、小文字、数字、特殊文字（! @ # $ % & * ? - _ .）をそれぞれ1文字以上含める必要があります。',
-                    hi: 'पासवर्ड में कम से कम 10 अक्षर, एक बड़ा अक्षर, एक छोटा अक्षर, एक संख्या और एक विशेष वर्ण (! @ # $ % & * ? - _ .) होना चाहिए।',
-                    ro: 'Parola trebuie să conțină cel puțin 10 caractere, o literă mare, o literă mică, o cifră și un caracter special (! @ # $ % & * ? - _ .).',
-                    it: 'La password deve contenere almeno 10 caratteri, una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale (! @ # $ % & * ? - _ .).',
-                    pt: 'A senha deve conter pelo menos 10 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial (! @ # $ % & * ? - _ .).'
-                },
-
-                init() {
-                    this.currentLanguage = window.LingoFillI18n?.getCurrentLanguage?.() || 'en';
-                },
-
-                setLanguage(language) {
-                    if (!language) {
-                        return;
-                    }
-
-                    this.currentLanguage = language.split('-')[0];
-                },
-
-                get passwordMessage() {
-                    return (this.messages[this.currentLanguage] || this.messages.en);
-                },
-
-                passwordIsValid() {
-                    return (this.password.length >= 10 &&
-                        /\p{Lu}/u.test(this.password) &&
-                        /\p{Ll}/u.test(this.password) &&
-                        /\p{N}/u.test(this.password) &&
-                        /[^\p{L}\p{N}\s]/u.test(this.password));
-                },
-
-                validatePassword(event) {
-                    if (this.passwordIsValid()) {
-                        this.showPasswordError = false;
-                        return;
-                    }
-
-                    event.preventDefault();
-                    this.showPasswordError = true;
-                    this.$nextTick(() => {
-                        document.getElementById('password1')?.focus();
-                    });
-                }
-            }));
-        });
-    </script>
+{% endblock %}
+{% block page_javascript %}
+    <script defer src="{% static 'core/alpine/registration-languages.js' %}"></script>
+    <script defer src="{% static 'core/alpine/password-validator.js' %}"></script>
 {% endblock %}

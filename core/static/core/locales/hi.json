@@ -154,5 +154,6 @@
     "accountChangesSavedTitle": "बदलाव सहेजे गए",
     "accountChangesSavedMessage": "आपके सभी बदलाव सफलतापूर्वक सहेजे गए।",
     "accountChangesErrorTitle": "बदलाव सहेजे नहीं जा सके",
-    "accountChangesErrorMessage": "कृपया बताए गए फ़ील्ड की जाँच करें और फिर से प्रयास करें।"
+    "accountChangesErrorMessage": "कृपया बताए गए फ़ील्ड की जाँच करें और फिर से प्रयास करें।",
+    "passwordValidationMessage": "पासवर्ड में कम से कम 10 अक्षर, एक बड़ा अक्षर, एक छोटा अक्षर, एक संख्या और एक विशेष वर्ण (! @ # $ % & * ? - _ .) होना चाहिए।"
 }

@@ -154,5 +154,6 @@
     "accountChangesSavedTitle": "Modificări salvate",
     "accountChangesSavedMessage": "Toate modificările au fost salvate cu succes.",
     "accountChangesErrorTitle": "Modificările nu au putut fi salvate",
-    "accountChangesErrorMessage": "Verifică câmpurile indicate și încearcă din nou."
+    "accountChangesErrorMessage": "Verifică câmpurile indicate și încearcă din nou.",
+    "passwordValidationMessage": "Parola trebuie să conțină cel puțin 10 caractere, o literă mare, o literă mică, o cifră și un caracter special (! @ # $ % & * ? - _ .)."
 }

@@ -154,5 +154,6 @@
     "accountChangesSavedTitle": "Changes saved",
     "accountChangesSavedMessage": "All your changes were saved successfully.",
     "accountChangesErrorTitle": "Changes could not be saved",
-    "accountChangesErrorMessage": "Please review the highlighted fields and try again."
+    "accountChangesErrorMessage": "Please review the highlighted fields and try again.",
+    "passwordValidationMessage": "Password must contain at least 10 characters, one uppercase letter, one lowercase letter, one number, and one special character (! @ # $ % & * ? - _ .)."
 }

@@ -160,25 +160,30 @@
         window.LINGOFILL_FORCE_PREFERRED_INTERFACE_LANGUAGE = "{{ force_preferred_interface_language|yesno:'true,false' }}" === "true";
         window.LINGOFILL_SUPPORTED_INTERFACE_LANGUAGES = [
             {% for language in available_interface_languages %}
-                "{{ language.code|escapejs }}"
-                {% if not forloop.last %},{% endif %}
+                "{{ language.code|escapejs }}"{% if not forloop.last %},{% endif %}
             {% endfor %}
         ];
+
+        {% block page_javascript_config %}
+        {% endblock %}
     </script>
+
     <!-- ====================================================================
-         JAVASCRIPT FILES
+         GLOBAL JAVASCRIPT FILES
          ==================================================================== -->
     <script defer src="{% static 'core/vendor/i18next/i18next.min.js' %}"></script>
     <script defer src="{% static 'core/vendor/i18next/i18nextHttpBackend.min.js' %}"></script>
     <script defer src="{% static 'core/language-manager.js' %}"></script>
     <script defer src="{% static 'core/i18n.js' %}"></script>
     <script defer src="{% static 'core/alpine/stores.js' %}"></script>
-    <script defer src="{% static 'core/alpine/focus-multiselect.js' %}"></script>
-    <script defer src="{% static 'core/alpine/learning-language.js' %}"></script>
-    <script defer src="{% static 'core/alpine/clipboard-exercise.js' %}"></script>
-    <script defer src="{% static 'core/alpine/registration-languages.js' %}"></script>
-    <script defer src="{% static 'core/alpine/initial-learning-language.js' %}"></script>
-    <script defer src="{% static 'core/alpine/exercise-history.js' %}"></script>
+
+    <!-- ====================================================================
+         PAGE-SPECIFIC JAVASCRIPT
+         ==================================================================== -->
+    {% block page_javascript %}
+    {% endblock %}
+
+    <!-- Alpine must be loaded after all Alpine component definitions -->
     <script defer src="{% static 'core/vendor/alpine/alpine.min.js' %}"></script>
 </body>
 </html>
