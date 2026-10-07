@@ -17,13 +17,21 @@ document.addEventListener('alpine:init', () => {
       return text.replace(/\s+/g, ' ').trim();
     },
 
-    updateState() {
-      const blankInputs = this.$root.querySelectorAll('.blank-input');
+    resizeBlankInput(input) {
+      const minWidth = 50;
+      const maxWidth = 200;
+      // Reset first so the input can also shrink when characters are deleted.
+      input.style.width = `${minWidth}px`;
+      minWidth = Math.max(input.scrollWidth + 2, minWidth);
+      const desiredWidth = Math.min(minWidth, maxWidth);
+      input.style.width = `${desiredWidth}px`;
+    },
 
-      this.canCopy =
-        blankInputs.length > 0 &&
-        Array.from(blankInputs)
-          .every((input) => input.value.trim() !== '');
+    updateState() {
+      const blankInputs = this.$el.querySelectorAll('.blank-input');
+      blankInputs.forEach((input) => this.resizeBlankInput(input));
+      this.canCopy = blankInputs.length > 0 && Array.from(blankInputs)
+        .every((input) => input.value.trim() !== '');
 
       if (!this.canCopy) {
         this.status = '';
