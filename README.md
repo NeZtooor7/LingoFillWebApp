@@ -142,9 +142,14 @@ LingoFillWebApp/
 │   ├── llm_service.py
 │   ├── urls.py
 │   └── views.py
+├── database/
+│   ├── schema.sql
+│   └── seed_languages.sql
 ├── staticfiles/
 ├── .env
 ├── .env.example
+├── compose.yaml
+├── Dockerfile
 ├── manage.py
 ├── README.md
 └── requirements.txt
@@ -179,23 +184,157 @@ If the Django secret key is configured from the environment in your current `set
 
 ## PostgreSQL setup
 
-Create a PostgreSQL database and an application user with the permissions required by LingoFill.
+Use either your existing PostgreSQL installation or the Docker database described below. For an existing installation, create a PostgreSQL database and an application user with the permissions required by LingoFill.
 
 Then configure the connection through the `.env` variables above.
 
-Before running the application, verify the database is reachable:
+Check the Django configuration, then verify the connection using a database client:
 
 ```bash
 python manage.py check
 ```
 
-If the project contains managed migrations, apply them with:
+`manage.py check` checks project configuration; it does not prove that PostgreSQL is reachable or that its schema is installed.
+
+The application models map to existing tables using `managed = False`. The supplied `database/schema.sql` also creates Django's built-in tables. See the migration-history note in the Docker instructions before applying Django migrations to a database restored from this file.
+
+## Docker database alternative
+
+Docker runs a separate PostgreSQL server for local development. You can use it instead of installing PostgreSQL directly on your computer, or alongside an existing installation. Your original database and its data remain separate; this setup does not copy them.
+
+The root `Dockerfile` builds a PostgreSQL 17.11 image. On the first startup of an empty database volume, PostgreSQL runs these files in order:
+
+1. `database/schema.sql` creates the complete exported schema, including application tables, Django tables, sequences, constraints, indexes, functions, triggers, and comments.
+2. `database/seed_languages.sql` adds the eight supported interface languages so registration and language selection have their required reference data.
+
+The schema export contains no users, exercises, sessions, or other existing records. Docker runs the database; continue running Django from your Python environment as described under Installation.
+
+### Install Docker
+
+On Windows, install [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) and follow its WSL 2 requirements. Start Docker Desktop and use Linux containers. Docker Desktop includes Docker Compose.
+
+On Linux, install [Docker Engine](https://docs.docker.com/engine/install/) and the [Docker Compose plugin](https://docs.docker.com/compose/install/linux/). Start the Docker daemon and ensure your user can run Docker commands. Docker Desktop is also available for macOS and Linux.
+
+Verify the installation in PowerShell or your terminal:
 
 ```bash
-python manage.py migrate
+docker version
+docker compose version
 ```
 
-Some project tables may be represented by Django models mapped to an existing PostgreSQL schema. Keep the actual model/schema strategy synchronized with the database before using migration commands that would alter existing tables.
+`docker version` must show both a client and a server. These instructions use Compose v2 (`docker compose`).
+
+### Configure the connection
+
+Run all commands below from the project root, the folder containing `manage.py` and `compose.yaml`. Create `.env` only if you do not already have one.
+
+Windows PowerShell:
+
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+Linux/macOS:
+
+```bash
+if [ ! -f .env ]; then cp .env.example .env; fi
+```
+
+The `.env.example` template already uses these Docker connection defaults. Edit them in `.env` as needed, replacing the password placeholder with your own password:
+
+```env
+DB_NAME=lingofill
+DB_USER=lingofill_user
+DB_PASSWORD=replace-with-your-local-database-password
+DB_HOST=127.0.0.1
+DB_PORT=5434
+```
+
+Keep your existing Django and OpenAI settings in the same file. Docker Compose and Django both read this `.env`; changing the connection selects which database the application uses.
+
+Port `5434` on your computer forwards to PostgreSQL's port `5432` inside the container. This lets a native PostgreSQL installation keep using its usual port. If `5434` is occupied, choose another unused `DB_PORT` and use it in your database client too. The published port binds to `127.0.0.1` for access from your computer.
+
+### Start and use the database
+
+```bash
+docker compose up -d --build --wait
+docker compose ps
+docker compose logs db
+```
+
+The first command builds the image, starts PostgreSQL in the background, and waits for the database health check. Look for successful execution of both initialization scripts in the logs. If startup fails, inspect `docker compose logs db` before trying again.
+
+Open a PostgreSQL terminal inside the container without installing PostgreSQL tools on your computer:
+
+```bash
+docker compose exec db psql -U lingofill_user -d lingofill
+```
+
+Use the `DB_USER` and `DB_NAME` you configured if they differ from this example. In `psql`, run `\dt public.*` to list tables, `SELECT code, name FROM languages ORDER BY code;` to see the seeded languages, and `\q` to exit.
+
+You can also connect using free Navicat Lite with a PostgreSQL connection:
+
+| Setting | Value |
+| --- | --- |
+| Host | `127.0.0.1` |
+| Port | `5434`, or your chosen `DB_PORT` |
+| Database | Your `DB_NAME` |
+| User | Your `DB_USER` |
+| Password | Your `DB_PASSWORD` |
+| SSL | Disabled for this local container |
+
+Schema initialization is handled by Docker and PostgreSQL, so no paid Navicat export or import features are required.
+
+With your Python environment activated and dependencies installed, run Django against the container:
+
+```bash
+python manage.py check
+python manage.py runserver
+```
+
+**Django migrations:** this schema-only dump includes the `django_migrations` table but none of its migration-history rows. It also contains no content-type or permission records. Django may report unapplied migrations even though their tables already exist. Do not run `manage.py migrate`, `--fake`, or `--fake-initial` blindly against this restored schema: migration history must first be reconciled with the actual schema and the project's migration files. Restore verified matching migration records or establish an explicitly reviewed migration baseline before applying future migrations or relying on populated Django admin permissions.
+
+### Stop, restart, and preserve data
+
+```bash
+docker compose stop
+docker compose start
+```
+
+Alternatively, `docker compose down` removes the containers and network while retaining the named `postgres_data` volume. Run `docker compose up -d --wait` to recreate the container with the same data.
+
+The initialization SQL runs **only when the PostgreSQL volume is empty**. Rebuilding the image after changing `schema.sql` does not update an existing database. Changing `DB_NAME`, `DB_USER`, or `DB_PASSWORD` in `.env` also does not change databases, roles, or passwords already stored in that volume. Keep matching connection settings, make deliberate changes through PostgreSQL, or reset an expendable development database.
+
+### Reset an expendable development database
+
+The following command permanently deletes this Compose project's database volume, including all accounts, exercises, and other records stored in it. Back up anything you need first. It does not delete your separate native PostgreSQL database.
+
+```bash
+docker compose down --volumes
+docker compose up -d --build --wait
+```
+
+This recreates the database using the current schema, seed file, and `.env` credentials. It is a reset, not a schema upgrade.
+
+### Export an updated schema
+
+To export the Docker database's structure without installing `pg_dump` locally, write the file inside the container and copy it to the project:
+
+```bash
+docker compose exec db pg_dump -U lingofill_user -d lingofill --schema-only --no-owner --no-privileges --file=/tmp/lingofill_schema.sql
+docker compose cp db:/tmp/lingofill_schema.sql database/schema.sql
+```
+
+If exporting your native database instead, run its compatible `pg_dump`, adjusting these connection details:
+
+```bash
+pg_dump -h 127.0.0.1 -p 5432 -U lingofill_user -d lingofill -W --schema-only --no-owner --no-privileges --file=database/schema.sql
+```
+
+Both exports replace `database/schema.sql`; review the changes before committing. A schema-only export does not include the reference-language seed or Django migration-history rows.
+
+This configuration is intended for local development. The official PostgreSQL image creates `DB_USER` as its bootstrap administrator; use separate, limited application roles and appropriate credentials for a production deployment.
+
 
 ## Installation
 

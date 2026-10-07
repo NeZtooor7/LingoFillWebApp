@@ -1,0 +1,6 @@
+# Only the database definition and initialization files belong in the build.
+**
+!Dockerfile
+!database/
+!database/schema.sql
+!database/seed_languages.sql
