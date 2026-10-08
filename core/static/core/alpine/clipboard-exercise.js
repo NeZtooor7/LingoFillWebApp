@@ -22,8 +22,8 @@ document.addEventListener('alpine:init', () => {
       const maxWidth = 200;
       // Reset first so the input can also shrink when characters are deleted.
       input.style.width = `${minWidth}px`;
-      minWidth = Math.max(input.scrollWidth + 2, minWidth);
-      const desiredWidth = Math.min(minWidth, maxWidth);
+      const contentWidth = Math.max(input.scrollWidth + 2, minWidth);
+      const desiredWidth = Math.min(contentWidth, maxWidth);
       input.style.width = `${desiredWidth}px`;
     },
 

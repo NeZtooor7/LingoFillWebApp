@@ -41,7 +41,7 @@ class RegistrationForm(forms.Form):
         return email
 
     def clean_nickname(self):
-        nickname = self.cleaned_data["nickname"].strip()
+        nickname = self.cleaned_data["nickname"].strip().lower()
         user_model = get_user_model()
 
         if user_model.objects.filter(nickname__iexact=nickname).exists():
@@ -106,7 +106,7 @@ class AccountEditForm(forms.Form):
         return email
 
     def clean_nickname(self):
-        nickname = self.cleaned_data["nickname"].strip()
+        nickname = self.cleaned_data["nickname"].strip().lower()
         user_model = get_user_model()
         already_exists = (user_model.objects
             .filter(nickname__iexact=nickname)
