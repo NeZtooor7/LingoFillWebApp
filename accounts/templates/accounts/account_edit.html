@@ -57,13 +57,16 @@
                 <input id="telephone" class="form-control" type="tel" name="telephone" value="{{ form.telephone.value|default:'' }}"
                        autocomplete="tel" data-i18n-placeholder="telephonePlaceholder" placeholder="Telephone">
             </div>
-            <div class="field-group">
+            <div class="field-group" x-data="nicknameValidator">
                 <label for="nickname" data-i18n="nicknameLabel">Nickname</label>
                 <input id="nickname" class="form-control" type="text" name="nickname" value="{{ form.nickname.value|default:'' }}"
                         minlength="{{ form.nickname.field.min_length }}" maxlength="{{ form.nickname.field.max_length }}"
-                        pattern="{{ form.nickname.field.widget.attrs.pattern }}" aria-describedby="nickname-rules"
+                        pattern="{{ form.nickname.field.widget.attrs.pattern }}"
+                        :aria-describedby="showRules ? 'nickname-rules' : null" :aria-invalid="showRules ? 'true' : null"
+                        @input="validateNickname($el)"
                         autocomplete="username" required data-i18n-placeholder="nicknamePlaceholder" placeholder="Nickname">
-                <p id="nickname-rules" class="help-text" data-i18n="nicknameRules">
+                <p id="nickname-rules" class="help-text" data-i18n="nicknameRules"
+                        x-cloak x-show="showRules" aria-live="polite">
                     At least 4 characters. Start with a letter (A-Z or a-z) and use only letters and numbers.
                 </p>
                 {% if form.nickname.errors %}
@@ -242,4 +245,5 @@
 {% block page_javascript %}
     <script defer src="{% static 'core/alpine/registration-languages.js' %}"></script>
     <script defer src="{% static 'core/alpine/password-validator.js' %}"></script>
+    <script defer src="{% static 'core/alpine/nickname-validator.js' %}"></script>
 {% endblock %}
