@@ -32,7 +32,7 @@ def _home_context(request, *, form=None, ai_form=None, errors=None):
 
     registered_learning_languages = [link.language for link in learning_language_links]
     show_learning_language_dialog = False
-    force_default_learning_language = request.session.pop('force_default_learning_language_once', False)
+    request.session.pop('force_default_learning_language_once', False)
     force_preferred_interface_language = request.session.pop('force_preferred_interface_language_once', False)
 
     if request.user.default_learning_language_id is None:
@@ -462,7 +462,7 @@ def save_corrected_exercise(request):
                 user                = request.user,
                 learning_language   = learning_language,
                 source              = "ai",
-                title               = generated_exercise.get("exercise_title" or None),
+                title               = generated_exercise.get("exercise_title"),
                 generation_settings = generated_exercise.get("generation_settings"),
                 ai_prompt           = generated_exercise.get("ai_prompt"),
                 advanced_options    = generated_exercise.get("advanced_options"),

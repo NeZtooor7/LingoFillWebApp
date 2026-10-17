@@ -45,8 +45,7 @@
                                     {{ exercise.created_at|date:'d/M/Y' }}
                                     {{ exercise.created_at|date:'g:i a' }}
                                     {{ exercise.learning_language.original_name }}"
-                                x-data="{editing: false, deleteDialogOpen: false}"
-                                x-init="$nextTick(() => $root.closest('[x-data=exerciseHistory]') || null)">
+                                x-data="{editing: false, deleteDialogOpen: false}">
                             <td>
                                 <span x-show="!editing">
                                     {% if exercise.title %}

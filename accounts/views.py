@@ -2,9 +2,9 @@ from django.contrib.auth import (
     get_user_model,
     login as auth_login,
     logout as auth_logout,
+    update_session_auth_hash,
 )
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseBadRequest, JsonResponse
@@ -25,10 +25,8 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect("exercises:home")
 
-    initial = {}
-
     if request.method == "GET":
-        form = LoginForm(initial=initial)
+        form = LoginForm()
 
     else:
         form = LoginForm(request.POST)
