@@ -6,6 +6,22 @@ from django.core.exceptions import ValidationError
 from .models.languages import Languages
 
 
+class NicknameField(forms.RegexField):
+    pattern = r"[A-Za-z][A-Za-z0-9]{3,149}"
+
+    def __init__(self):
+        super().__init__(
+            regex=rf"\A{self.pattern}\Z",
+            min_length=4,
+            max_length=150,
+            strip=False,
+            error_messages={
+                "invalid": "Nickname must start with a letter (A-Z or a-z), contain only letters and numbers, and have at least 4 characters."
+            },
+            widget=forms.TextInput(attrs={"pattern": self.pattern}),
+        )
+
+
 class LoginForm(forms.Form):
     identifier = forms.CharField(max_length=254)
     password = forms.CharField(widget=forms.PasswordInput)
@@ -16,7 +32,7 @@ class RegistrationForm(forms.Form):
     last_name = forms.CharField(max_length=150)
     email = forms.EmailField(max_length=254)
     telephone = forms.CharField(max_length=30, required=False)
-    nickname = forms.CharField(max_length=150)
+    nickname = NicknameField()
     preferred_interface_language_id = forms.IntegerField(required=True)
     learning_languages = forms.ModelMultipleChoiceField(queryset=Languages.objects.none(), required=True)
     password1 = forms.CharField(widget=forms.PasswordInput)
@@ -73,7 +89,7 @@ class AccountEditForm(forms.Form):
     last_name = forms.CharField(max_length=150)
     email = forms.EmailField(max_length=254)
     telephone = forms.CharField(max_length=30, required=False)
-    nickname = forms.CharField(max_length=150)
+    nickname = NicknameField()
     preferred_interface_language_id = forms.IntegerField()
     learning_languages = forms.ModelMultipleChoiceField(queryset=Languages.objects.none(), required=True)
     password1 = forms.CharField(widget=forms.PasswordInput, required=False)

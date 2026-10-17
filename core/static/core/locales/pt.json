@@ -94,6 +94,7 @@
     "telephonePlaceholder": "Telefone",
     "nicknameLabel": "Nome de utilizador",
     "nicknamePlaceholder": "Nome de utilizador",
+    "nicknameRules": "Pelo menos 4 caracteres. Começa com uma letra (A-Z ou a-z) e utiliza apenas letras e números.",
     "preferredInterfaceLanguageIdLabel": "Idioma preferido da interface",
     "preferredInterfaceLanguageIdHelp": "Pode alterar o idioma da interface a qualquer momento.",
     "learningLanguagesLabel": "Idiomas que pretende aprender",

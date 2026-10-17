@@ -7,7 +7,57 @@ from django.test import Client, RequestFactory, SimpleTestCase
 from django.urls import reverse
 
 from . import views
+from .forms import AccountEditForm, RegistrationForm
+from .models.languages import Languages
 from .models.user import User
+
+
+class NicknameFormTests(SimpleTestCase):
+    def nickname_form(self, form_class, value, duplicate=False):
+        user = User(id=7, preferred_interface_language_id=1)
+        with (
+            patch.object(Languages.objects, "order_by", return_value=Languages.objects.none()),
+            patch("accounts.forms.get_user_model") as get_user_model,
+        ):
+            queryset = get_user_model.return_value.objects.filter.return_value
+            queryset.exists.return_value = duplicate
+            queryset.exclude.return_value.exists.return_value = duplicate
+            kwargs = {"user": user} if form_class is AccountEditForm else {}
+            form = form_class(data={"nickname": value}, **kwargs)
+            # Other required fields are intentionally absent; check nickname alone.
+            form.is_valid()
+        return form, queryset
+
+    def test_valid_nicknames_are_lowercased_in_both_forms(self):
+        for form_class in (RegistrationForm, AccountEditForm):
+            for nickname in ("Abcd", "a123", "Player42", "Z" + "9" * 149):
+                with self.subTest(form=form_class.__name__, nickname=nickname):
+                    form, _ = self.nickname_form(form_class, nickname)
+                    self.assertNotIn("nickname", form.errors)
+                    self.assertEqual(form.cleaned_data["nickname"], nickname.lower())
+
+    def test_invalid_nicknames_are_rejected_before_uniqueness_lookup(self):
+        invalid = (
+            "", "abc", "1234", "1abc", "_abc", "abc_", "ab-c", "ab.c",
+            "ab c", " abcd", "abcd ", "abc\t", "abcd\n", "ábcd", "aébc",
+            "Ａbcd", "abc١", "Nick😀", "a" * 151,
+        )
+        for form_class in (RegistrationForm, AccountEditForm):
+            for nickname in invalid:
+                with self.subTest(form=form_class.__name__, nickname=nickname):
+                    form, queryset = self.nickname_form(form_class, nickname)
+                    self.assertIn("nickname", form.errors)
+                    self.assertNotIn("nickname", form.cleaned_data)
+                    queryset.exists.assert_not_called()
+                    queryset.exclude.assert_not_called()
+
+    def test_case_insensitive_duplicates_are_still_rejected(self):
+        for form_class in (RegistrationForm, AccountEditForm):
+            with self.subTest(form=form_class.__name__):
+                form, queryset = self.nickname_form(form_class, "Player42", duplicate=True)
+                self.assertIn("This nickname is already in use.", form.errors["nickname"])
+                if form_class is AccountEditForm:
+                    queryset.exclude.assert_called_once_with(id=7)
 
 
 class LanguagePreferenceViewTests(SimpleTestCase):

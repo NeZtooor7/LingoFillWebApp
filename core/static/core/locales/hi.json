@@ -94,6 +94,7 @@
     "telephonePlaceholder": "टेलीफोन",
     "nicknameLabel": "उपनाम",
     "nicknamePlaceholder": "उपनाम",
+    "nicknameRules": "कम से कम 4 अक्षर। अंग्रेज़ी अक्षर (A-Z या a-z) से शुरू करें और केवल अंग्रेज़ी अक्षरों और अंकों का उपयोग करें।",
     "preferredInterfaceLanguageIdLabel": "पसंदीदा इंटरफ़ेस भाषा",
     "preferredInterfaceLanguageIdHelp": "आप इंटरफ़ेस की भाषा किसी भी समय बदल सकते हैं।",
     "learningLanguagesLabel": "वे भाषाएँ जिन्हें आप सीखना चाहते हैं",

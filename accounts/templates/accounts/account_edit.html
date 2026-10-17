@@ -60,7 +60,12 @@
             <div class="field-group">
                 <label for="nickname" data-i18n="nicknameLabel">Nickname</label>
                 <input id="nickname" class="form-control" type="text" name="nickname" value="{{ form.nickname.value|default:'' }}"
+                        minlength="{{ form.nickname.field.min_length }}" maxlength="{{ form.nickname.field.max_length }}"
+                        pattern="{{ form.nickname.field.widget.attrs.pattern }}" aria-describedby="nickname-rules"
                         autocomplete="username" required data-i18n-placeholder="nicknamePlaceholder" placeholder="Nickname">
+                <p id="nickname-rules" class="help-text" data-i18n="nicknameRules">
+                    At least 4 characters. Start with a letter (A-Z or a-z) and use only letters and numbers.
+                </p>
                 {% if form.nickname.errors %}
                     <div class="error-box">
                         {% for error in form.nickname.errors %}

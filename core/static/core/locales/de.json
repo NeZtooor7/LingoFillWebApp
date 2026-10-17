@@ -94,6 +94,7 @@
     "telephonePlaceholder": "Telefon",
     "nicknameLabel": "Benutzername",
     "nicknamePlaceholder": "Benutzername",
+    "nicknameRules": "Mindestens 4 Zeichen. Beginne mit einem Buchstaben (A-Z oder a-z) und verwende nur Buchstaben und Zahlen.",
     "preferredInterfaceLanguageIdLabel": "Bevorzugte Sprache der Benutzeroberfläche",
     "preferredInterfaceLanguageIdHelp": "Du kannst die Sprache der Benutzeroberfläche jederzeit ändern.",
     "learningLanguagesLabel": "Sprachen, die du lernen möchtest",

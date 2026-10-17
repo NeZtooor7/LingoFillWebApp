@@ -94,6 +94,7 @@
     "telephonePlaceholder": "電話番号",
     "nicknameLabel": "ニックネーム",
     "nicknamePlaceholder": "ニックネーム",
+    "nicknameRules": "4文字以上。英字（A-Zまたはa-z）で始め、英字と数字のみを使用してください。",
     "preferredInterfaceLanguageIdLabel": "表示言語",
     "preferredInterfaceLanguageIdHelp": "表示言語はいつでも変更できます。",
     "learningLanguagesLabel": "学びたい言語",

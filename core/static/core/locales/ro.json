@@ -94,6 +94,7 @@
     "telephonePlaceholder": "Telefon",
     "nicknameLabel": "Pseudonim",
     "nicknamePlaceholder": "Pseudonim",
+    "nicknameRules": "Cel puțin 4 caractere. Începe cu o literă (A-Z sau a-z) și folosește doar litere și cifre.",
     "preferredInterfaceLanguageIdLabel": "Limba preferată a interfeței",
     "preferredInterfaceLanguageIdHelp": "Poți schimba limba interfeței în orice moment.",
     "learningLanguagesLabel": "Limbile pe care vrei să le înveți",
