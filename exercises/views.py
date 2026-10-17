@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core import signing
 from django.conf import settings
 from django.db import transaction
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -11,7 +11,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 
 from .models import Exercises, ExerciseItems
-from .forms import AIExerciseRequestForm, ExercisePreferenceForm, SentenceInputForm
+from .forms import AIExerciseRequestForm, SentenceInputForm
 from accounts.models.languages import Languages
 from accounts.models.users_learning_languages import UsersLearningLanguages
 from .llm_service import (
@@ -57,10 +57,11 @@ def _home_context(request, *, form=None, ai_form=None, errors=None):
     return {
         'form': form if form is not None else SentenceInputForm(),
         'ai_form': ai_form if ai_form is not None else AIExerciseRequestForm(initial={
-            'level': request.user.exercise_level,
-            'sentence_count': str(request.user.exercise_sentence_count),
-            'blank_count': request.user.exercise_blank_count,
+            'level': 'A1',
+            'sentence_count': '10',
+            'blank_count': '1',
         }),
+        'exercise_options_bound': ai_form is not None and ai_form.is_bound,
         'all_languages': all_languages,
         'registered_learning_languages': registered_learning_languages,
         'show_learning_language_dialog': show_learning_language_dialog,
@@ -76,23 +77,6 @@ def _home_context(request, *, form=None, ai_form=None, errors=None):
 @ensure_csrf_cookie
 def home(request):
     return render(request, 'exercises/home.html', _home_context(request))
-
-
-@require_POST
-def set_exercise_preference(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Authentication required.'}, status=401)
-
-    form = ExercisePreferenceForm(request.POST)
-    if not form.is_valid():
-        return JsonResponse({'error': 'Invalid exercise option.'}, status=400)
-
-    option = form.cleaned_data['option']
-    value = form.cleaned_data['value']
-    field_name = f'exercise_{option}'
-    setattr(request.user, field_name, value)
-    request.user.save(update_fields=[field_name])
-    return JsonResponse({'option': option, 'value': str(value)})
 
 
 def build_sentence_chunks(source_text):

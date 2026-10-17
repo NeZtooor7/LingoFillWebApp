@@ -57,12 +57,6 @@ CREATE TABLE public.account_users (
     telephone character varying(30),
     preferred_interface_language_id bigint NOT NULL,
     default_learning_language_id bigint,
-    exercise_level character varying(2) DEFAULT 'A1' NOT NULL
-        CONSTRAINT account_users_exercise_level_check CHECK (exercise_level IN ('A1', 'A2', 'B1', 'B2')),
-    exercise_sentence_count smallint DEFAULT 10 NOT NULL
-        CONSTRAINT account_users_exercise_sentence_count_check CHECK (exercise_sentence_count IN (5, 10, 15, 20, 30)),
-    exercise_blank_count character varying(3) DEFAULT '1' NOT NULL
-        CONSTRAINT account_users_exercise_blank_count_check CHECK (exercise_blank_count IN ('1', '1-2', '2-3')),
     password character varying(128) NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     is_staff boolean DEFAULT false NOT NULL,
@@ -135,10 +129,6 @@ COMMENT ON COLUMN public.account_users.preferred_interface_language_id IS 'Prefe
 --
 
 COMMENT ON COLUMN public.account_users.default_learning_language_id IS 'Persistent default exercise language. It is initially NULL and is resolved from the languages selected during registration; users remain free to use any supported learning language afterward.';
-
-COMMENT ON COLUMN public.account_users.exercise_level IS 'Last selected exercise CEFR level: A1, A2, B1 or B2.';
-COMMENT ON COLUMN public.account_users.exercise_sentence_count IS 'Last selected exercise sentence count: 5, 10, 15, 20 or 30.';
-COMMENT ON COLUMN public.account_users.exercise_blank_count IS 'Last selected blanks-per-sentence option: 1, 1-2 or 2-3.';
 
 
 --

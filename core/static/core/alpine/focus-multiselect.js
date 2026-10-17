@@ -3,10 +3,20 @@ document.addEventListener('alpine:init', () => {
     open: false,
     selectionVersion: 0,
     translationVersion: 0,
+    saveError: false,
 
     init() {
+      const preferences = this.$store.exercisePreferences;
+      preferences.configure(this.$root.closest('form'));
+      const saved = preferences.values.focus;
+      const inputs = [...this.$el.querySelectorAll('input[type="checkbox"]')];
+      if (!preferences.preserveSubmitted && Array.isArray(saved)) {
+        inputs.forEach(input => { input.checked = saved.includes(input.value); });
+      }
+      preferences.values.focus = inputs.filter(input => input.checked).map(input => input.value);
+      this.$nextTick(() => this.selectionVersion++);
       document.addEventListener(
-        'languageChanged',
+        'lingofill:language-changed',
         () => {
           this.translationVersion++;
         }
@@ -23,6 +33,9 @@ document.addEventListener('alpine:init', () => {
 
     refreshSelection() {
       this.selectionVersion++;
+      const selected = [...this.$refs.menu.querySelectorAll('input[type="checkbox"]:checked')]
+        .map(input => input.value);
+      this.saveError = !this.$store.exercisePreferences.save('focus', selected);
     },
 
     get selectedItems() {

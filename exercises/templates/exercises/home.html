@@ -90,6 +90,9 @@
 
     <section class="generator-card">
         <form id="ai-exercise-form" name="ai-exercise-form" class="input-form ai-form" method="post"
+            data-preference-key="lingofill-exercise-options-{{ user.pk }}"
+            data-preference-path="{% url 'exercises:home' %}"
+            data-options-bound="{{ exercise_options_bound|yesno:'true,false' }}"
             action="{% url 'exercises:ai_exercise_create' %}"
             @submit="if ($store.languagePreferences.saving) { $event.preventDefault(); } else { $store.loading.start('generatingExerciseMessage', 'Generating exercise...'); }">
             {% csrf_token %}
@@ -104,8 +107,7 @@
                 data-i18n-placeholder="aiGoalPlaceholder"
                 placeholder="Example: Practice sein and haben in present tense with ich, du, er, sie and wir."></textarea>
 
-            <div class="quick-options-grid" x-data="exercisePreferenceSelector"
-                    data-save-url="{% url 'exercises:set_exercise_preference' %}">
+            <div class="quick-options-grid" x-data="exercisePreferenceSelector">
                 <div class="field-group" x-data="learningLanguageSelector"
                         data-save-url="{% url 'accounts:set_learning_language' %}"
                         data-initial-language="{{ initial_learning_language_code }}"
@@ -140,7 +142,7 @@
 
                 <div class="field-group">
                     <label for="level" data-i18n="levelLabel">Level</label>
-                    <select id="level" name="level" @change="saveOption($el)" :disabled="$store.languagePreferences.saving">
+                    <select id="level" name="level" @change="saveOption($el)">
                         {% for value, label in ai_form.fields.level.choices %}
                             <option value="{{ value }}" {% if value == ai_form.level.value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -149,7 +151,7 @@
 
                 <div class="field-group">
                     <label for="sentence_count" data-i18n="sentenceCountLabel">Sentences</label>
-                    <select id="sentence_count" name="sentence_count" @change="saveOption($el)" :disabled="$store.languagePreferences.saving">
+                    <select id="sentence_count" name="sentence_count" @change="saveOption($el)">
                         {% for value, label in ai_form.fields.sentence_count.choices %}
                             <option value="{{ value }}" {% if value == ai_form.sentence_count.value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -158,7 +160,7 @@
 
                 <div class="field-group">
                     <label for="blank_count" data-i18n="blankCountLabel">Blanks</label>
-                    <select id="blank_count" name="blank_count" @change="saveOption($el)" :disabled="$store.languagePreferences.saving">
+                    <select id="blank_count" name="blank_count" @change="saveOption($el)">
                         <option value="1" {% if ai_form.blank_count.value == '1' %}selected{% endif %} data-i18n="oneBlankOption">1 blank</option>
                         <option value="1-2" {% if ai_form.blank_count.value == '1-2' %}selected{% endif %} data-i18n="oneTwoBlanksOption">1–2 blanks</option>
                         <option value="2-3" {% if ai_form.blank_count.value == '2-3' %}selected{% endif %} data-i18n="twoThreeBlanksOption">2–3 blanks</option>
@@ -194,30 +196,38 @@
 
                     <div id="focus-menu" class="multiselect-menu" x-ref="menu" x-cloak x-show="open" x-transition @click.outside="close">
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="verbs" data-label-key="focusVerbs" checked @change="refreshSelection">
+                            <input type="checkbox" name="focus" value="verbs" data-label-key="focusVerbs"
+                                {% if not ai_form.is_bound or 'verbs' in ai_form.focus.value %}checked{% endif %} @change="refreshSelection">
                             <span data-i18n="focusVerbs">Verbs</span>
                         </label>
 
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="articles" data-label-key="focusArticles" @change="refreshSelection">
+                            <input type="checkbox" name="focus" value="articles" data-label-key="focusArticles"
+                                {% if 'articles' in ai_form.focus.value %}checked{% endif %} @change="refreshSelection">
                             <span data-i18n="focusArticles">Articles</span>
                         </label>
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="pronouns" data-label-key="focusPronouns" @change="refreshSelection">
+                            <input type="checkbox" name="focus" value="pronouns" data-label-key="focusPronouns"
+                                {% if 'pronouns' in ai_form.focus.value %}checked{% endif %} @change="refreshSelection">
                             <span data-i18n="focusPronouns">Pronouns</span>
                         </label>
 
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="tenses" data-label-key="focusTenses" @change="refreshSelection">
+                            <input type="checkbox" name="focus" value="tenses" data-label-key="focusTenses"
+                                {% if 'tenses' in ai_form.focus.value %}checked{% endif %} @change="refreshSelection">
                             <span data-i18n="focusTenses">Tenses</span>
                         </label>
 
                         <label class="multiselect-option">
-                            <input type="checkbox" name="focus" value="expressions" data-label-key="focusExpressions" @change="refreshSelection">
+                            <input type="checkbox" name="focus" value="expressions" data-label-key="focusExpressions"
+                                {% if 'expressions' in ai_form.focus.value %}checked{% endif %} @change="refreshSelection">
                             <span data-i18n="focusExpressions">Expressions</span>
                         </label>
                     </div>
                 </div>
+                <p class="help-text" x-cloak x-show="saveError" role="alert" data-i18n="exercisePreferenceSaveError">
+                    Your exercise options could not be saved. Please try again.
+                </p>
             </div>
             <br />
             <details class="advanced-options">
@@ -326,9 +336,9 @@
     </section>
 {% endblock %}
 {% block page_javascript %}
+    <script defer src="{% static 'core/alpine/exercise-preferences.js' %}"></script>
     <script defer src="{% static 'core/alpine/focus-multiselect.js' %}"></script>
     <script defer src="{% static 'core/alpine/learning-language.js' %}"></script>
-    <script defer src="{% static 'core/alpine/exercise-preferences.js' %}"></script>
 
     {% if show_learning_language_dialog %}
         <script defer src="{% static 'core/alpine/initial-learning-language.js' %}"></script>

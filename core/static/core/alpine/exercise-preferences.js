@@ -1,40 +1,79 @@
 document.addEventListener('alpine:init', () => {
+  Alpine.store('exercisePreferences', {
+    configured: false,
+    key: '',
+    path: '/',
+    preserveSubmitted: false,
+    values: {},
+
+    configure(form) {
+      if (this.configured || !form) {
+        return;
+      }
+      this.configured = true;
+      this.key = form.dataset.preferenceKey;
+      this.path = form.dataset.preferencePath;
+      this.preserveSubmitted = form.dataset.optionsBound === 'true';
+
+      try {
+        const prefix = `${this.key}=`;
+        const cookie = document.cookie.split(';').map(part => part.trim())
+          .find(part => part.startsWith(prefix));
+        if (!cookie) {
+          return;
+        }
+        const saved = JSON.parse(decodeURIComponent(cookie.slice(prefix.length)));
+        if (!saved || typeof saved !== 'object' || Array.isArray(saved)) {
+          return;
+        }
+        for (const name of ['level', 'sentence_count', 'blank_count']) {
+          if (typeof saved[name] === 'string' && saved[name].length <= 10) {
+            this.values[name] = saved[name];
+          }
+        }
+        if (Array.isArray(saved.focus)) {
+          this.values.focus = [...new Set(saved.focus.filter(value => typeof value === 'string'
+            && value.length <= 20))].slice(0, 5);
+        }
+      } catch (error) {
+        console.warn('Saved exercise options could not be read.', error);
+      }
+    },
+
+    save(name, value) {
+      this.values[name] = value;
+      if (!this.key) {
+        return false;
+      }
+      try {
+        const encoded = encodeURIComponent(JSON.stringify(this.values));
+        const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie = `${this.key}=${encoded}; Max-Age=31536000; Path=${this.path}; SameSite=Lax${secure}`;
+        return document.cookie.split(';').some(part => part.trim() === `${this.key}=${encoded}`);
+      } catch (error) {
+        console.warn('Exercise options could not be saved in this browser.', error);
+        return false;
+      }
+    }
+  });
+
   Alpine.data('exercisePreferenceSelector', () => ({
-    saved: {},
-    saving: false,
     saveError: false,
 
     init() {
+      const preferences = this.$store.exercisePreferences;
+      preferences.configure(this.$root.closest('form'));
       this.$el.querySelectorAll('select[name]').forEach(select => {
-        this.saved[select.name] = select.value;
+        const saved = preferences.values[select.name];
+        if (!preferences.preserveSubmitted && [...select.options].some(option => option.value === saved)) {
+          select.value = saved;
+        }
+        preferences.values[select.name] = select.value;
       });
     },
 
-    async saveOption(select) {
-      const option = select.name;
-      const previousValue = this.saved[option];
-      if (this.saving) {
-        select.value = previousValue;
-        return;
-      }
-
-      const value = select.value;
-      this.saving = true;
-      this.saveError = false;
-      try {
-        const result = await this.$store.languagePreferences.saveValues(
-          this.$root.dataset.saveUrl, { option, value }
-        );
-        if (result.option !== option || result.value !== value) {
-          throw new Error('The exercise preference response was invalid.');
-        }
-        this.saved[option] = value;
-      } catch (error) {
-        select.value = previousValue;
-        this.saveError = true;
-      } finally {
-        this.saving = false;
-      }
+    saveOption(select) {
+      this.saveError = !this.$store.exercisePreferences.save(select.name, select.value);
     }
   }));
 });
