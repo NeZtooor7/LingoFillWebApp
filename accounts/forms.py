@@ -26,6 +26,9 @@ class LoginForm(forms.Form):
     identifier = forms.CharField(max_length=254)
     password = forms.CharField(widget=forms.PasswordInput)
 
+    def clean_identifier(self):
+        return self.cleaned_data["identifier"].lower()
+
 
 class RegistrationForm(forms.Form):
     first_name = forms.CharField(max_length=150)

@@ -34,7 +34,7 @@ def login_view(request):
         form = LoginForm(request.POST)
 
         if form.is_valid():
-            identifier = form.cleaned_data["identifier"].strip()
+            identifier = form.cleaned_data["identifier"]
             password = form.cleaned_data["password"]
             user_model = get_user_model()
             user = (user_model.objects

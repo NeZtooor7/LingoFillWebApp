@@ -21,6 +21,12 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["nickname", "first_name", "last_name", "preferred_interface_language_id"]
 
+    def save(self, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if update_fields is None or "email" in update_fields:
+            self.email = self.email.strip().lower()
+        return super().save(**kwargs)
+
     class Meta:
         managed = False
         db_table = "account_users"

@@ -3,13 +3,91 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.db.models import Q
 from django.test import Client, RequestFactory, SimpleTestCase
 from django.urls import reverse
 
 from . import views
-from .forms import AccountEditForm, RegistrationForm
+from .forms import AccountEditForm, LoginForm, RegistrationForm
 from .models.languages import Languages
 from .models.user import User
+
+
+class AccountIdentifierTests(SimpleTestCase):
+    def test_login_lowercases_email_and_nickname_without_changing_password_case(self):
+        for identifier in (" Player42 ", " USER@Example.COM "):
+            with self.subTest(identifier=identifier):
+                password = "MiXeD-Case-Password42!"
+                form = LoginForm({"identifier": identifier, "password": password})
+                self.assertTrue(form.is_valid())
+                self.assertEqual(form.cleaned_data["identifier"], identifier.strip().lower())
+                self.assertEqual(form.cleaned_data["password"], password)
+
+    def test_login_view_uses_normalized_identifier_and_original_password(self):
+        for identifier in ("Player42", "USER@Example.COM"):
+            with self.subTest(identifier=identifier):
+                password = "MiXeD-Case-Password42!"
+                request = RequestFactory().post(
+                    reverse("accounts:login"),
+                    {"identifier": identifier, "password": password},
+                )
+                request.user = AnonymousUser()
+                request.session = Mock()
+                with (
+                    patch("accounts.views.get_user_model") as get_user_model,
+                    patch("accounts.views.auth_login") as auth_login,
+                ):
+                    user = get_user_model.return_value.objects.filter.return_value.first.return_value
+                    user.is_active = True
+                    user.check_password.return_value = True
+                    response = views.login_view(request)
+
+                normalized = identifier.lower()
+                get_user_model.return_value.objects.filter.assert_called_once_with(
+                    Q(email__iexact=normalized) | Q(nickname__iexact=normalized)
+                )
+                user.check_password.assert_called_once_with(password)
+                auth_login.assert_called_once_with(
+                    request, user, backend="django.contrib.auth.backends.ModelBackend"
+                )
+                self.assertEqual(response.status_code, 302)
+
+    def test_registration_and_account_edit_normalize_the_entire_email(self):
+        for form_class in (RegistrationForm, AccountEditForm):
+            with self.subTest(form=form_class.__name__):
+                with (
+                    patch.object(Languages.objects, "order_by", return_value=Languages.objects.none()),
+                    patch("accounts.forms.get_user_model") as get_user_model,
+                ):
+                    queryset = get_user_model.return_value.objects.filter.return_value
+                    queryset.exists.return_value = False
+                    queryset.exclude.return_value.exists.return_value = False
+                    kwargs = {"user": User(id=7)} if form_class is AccountEditForm else {}
+                    form = form_class({"email": " User.Name+Tag@Example.COM "}, **kwargs)
+                    form.is_valid()
+
+                self.assertNotIn("email", form.errors)
+                self.assertEqual(form.cleaned_data["email"], "user.name+tag@example.com")
+                get_user_model.return_value.objects.filter.assert_called_once_with(
+                    email__iexact="user.name+tag@example.com"
+                )
+
+    def test_user_save_normalizes_email_before_persistence(self):
+        for kwargs in ({}, {"update_fields": ["email"]}, {"update_fields": ["email", "nickname"]}):
+            with self.subTest(save_kwargs=kwargs):
+                user = User(email=" User.Name+Tag@Example.COM ")
+                with patch.object(AbstractBaseUser, "save") as save:
+                    user.save(**kwargs)
+                    self.assertEqual(user.email, "user.name+tag@example.com")
+                    save.assert_called_once_with(**kwargs)
+
+    def test_partial_saves_of_other_fields_leave_email_alone(self):
+        user = User(email="Legacy@Example.COM")
+        with patch.object(AbstractBaseUser, "save") as save:
+            user.save(update_fields=["preferred_interface_language_id"])
+            self.assertEqual(user.email, "Legacy@Example.COM")
+            save.assert_called_once_with(update_fields=["preferred_interface_language_id"])
 
 
 class NicknameFormTests(SimpleTestCase):
