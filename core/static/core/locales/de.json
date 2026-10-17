@@ -64,6 +64,7 @@
     "interfaceLanguageLabel": "Sprache der Oberfläche",
     "exerciseLanguageLabel": "Übungssprache",
     "languagePreferenceSaveError": "Deine Spracheinstellung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "exercisePreferenceSaveError": "Deine Übungsoptionen konnten nicht gespeichert werden. Bitte versuche es erneut.",
     "generatingExerciseMessage": "Übung wird erstellt...",
     "checkingAnswersMessage": "Antworten werden geprüft...",
     "loadingButtonText": "Lädt...",

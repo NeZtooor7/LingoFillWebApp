@@ -49,6 +49,7 @@ class AIExerciseRequestForm(forms.Form):
         ('A1', 'A1'),
         ('A2', 'A2'),
         ('B1', 'B1'),
+        ('B2', 'B2'),
     ]
 
     SENTENCE_COUNT_CHOICES = [
@@ -155,3 +156,21 @@ class AIExerciseRequestForm(forms.Form):
 
     def clean_sentence_count(self):
         return int(self.cleaned_data['sentence_count'])
+
+
+class ExercisePreferenceForm(forms.Form):
+    option = forms.ChoiceField(choices=[
+        ('level', 'Level'),
+        ('sentence_count', 'Sentences'),
+        ('blank_count', 'Blanks'),
+    ])
+    value = forms.CharField(max_length=10)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        option = cleaned_data.get('option')
+        value = cleaned_data.get('value')
+        if option and value:
+            value = AIExerciseRequestForm.base_fields[option].clean(value)
+            cleaned_data['value'] = int(value) if option == 'sentence_count' else value
+        return cleaned_data

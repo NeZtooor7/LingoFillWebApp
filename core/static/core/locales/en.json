@@ -64,6 +64,7 @@
     "interfaceLanguageLabel": "Interface language",
     "exerciseLanguageLabel": "Exercise language",
     "languagePreferenceSaveError": "Your language preference could not be saved. Please try again.",
+    "exercisePreferenceSaveError": "Your exercise options could not be saved. Please try again.",
     "generatingExerciseMessage": "Generating exercise...",
     "checkingAnswersMessage": "Checking answers...",
     "loadingButtonText": "Loading...",

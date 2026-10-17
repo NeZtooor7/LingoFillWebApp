@@ -7,6 +7,13 @@ document.addEventListener('alpine:init', () => {
     },
 
     async save(url, languageCode) {
+      const result = await this.saveValues(url, { language_code: languageCode });
+      if (url && result.language_code !== languageCode) {
+        throw new Error('The language preference response was invalid.');
+      }
+    },
+
+    async saveValues(url, values) {
       // Anonymous interface-language changes remain local to the browser.
       if (!url) {
         return;
@@ -31,7 +38,7 @@ document.addEventListener('alpine:init', () => {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'application/json'
           },
-          body: new URLSearchParams({ language_code: languageCode }),
+          body: new URLSearchParams(values),
           signal: controller.signal
         });
 
@@ -39,10 +46,7 @@ document.addEventListener('alpine:init', () => {
           throw new Error('The language preference could not be saved.');
         }
 
-        const result = await response.json();
-        if (result.language_code !== languageCode) {
-          throw new Error('The language preference response was invalid.');
-        }
+        return await response.json();
       } finally {
         clearTimeout(timeout);
         this.pending--;

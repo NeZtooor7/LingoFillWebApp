@@ -64,6 +64,7 @@
     "interfaceLanguageLabel": "Idioma da interface",
     "exerciseLanguageLabel": "Idioma do exercício",
     "languagePreferenceSaveError": "Não foi possível salvar sua preferência de idioma. Tente novamente.",
+    "exercisePreferenceSaveError": "Não foi possível guardar as opções do exercício. Tenta novamente.",
     "generatingExerciseMessage": "Gerando exercício...",
     "checkingAnswersMessage": "Verificando respostas...",
     "loadingButtonText": "Carregando...",

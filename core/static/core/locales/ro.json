@@ -64,6 +64,7 @@
     "interfaceLanguageLabel": "Limba interfeței",
     "exerciseLanguageLabel": "Limba exercițiului",
     "languagePreferenceSaveError": "Preferința ta de limbă nu a putut fi salvată. Te rugăm să încerci din nou.",
+    "exercisePreferenceSaveError": "Opțiunile exercițiului nu au putut fi salvate. Încearcă din nou.",
     "generatingExerciseMessage": "Se generează exercițiul...",
     "checkingAnswersMessage": "Se verifică răspunsurile...",
     "loadingButtonText": "Se încarcă...",

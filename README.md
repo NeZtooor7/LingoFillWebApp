@@ -144,7 +144,9 @@ LingoFillWebApp/
 │   └── views.py
 ├── database/
 │   ├── schema.sql
-│   └── seed_languages.sql
+│   ├── seed_languages.sql
+│   └── upgrades/
+│       └── 001_exercise_preferences.sql
 ├── staticfiles/
 ├── .env
 ├── .env.example
@@ -449,6 +451,32 @@ For signed-in users, choosing **Menu → Interface languages** immediately saves
 If a preference request fails, the previous selection is retained and an error appears beside the selector. Exercise generation and profile submission are disabled while a preference save is in progress. Anonymous interface-language choices remain in browser storage.
 
 Changing interface language must not silently change the user's learning language.
+
+## Remembered exercise options
+
+Exercise levels are **A1, A2, B1, and B2**. For signed-in users, changing the exercise language, level, sentence count, or blanks immediately saves that selection to the account. The last saved values are restored after logout/login and on other browsers. Changing these options does not require generating an exercise first.
+
+New accounts start with level A1, 10 sentences, and 1 blank. Failed saves restore the previous selection and show an error. Generation, profile submission, and logout are disabled while a preference save is pending.
+
+### Upgrade an existing database
+
+Before starting this version against an existing database, stop Django and run `database/upgrades/001_exercise_preferences.sql` against your LingoFill database using its owner or a role allowed to alter `account_users`. It adds the three option fields with defaults and constraints, preserving existing accounts and exercises. It can be run again safely. These account tables use `managed = False`, so Django migrations do not install these columns.
+
+With free Navicat Lite, open a query window for the LingoFill database, paste the upgrade file's contents, and execute them. Alternatively, use `psql` with the connection details for your native PostgreSQL installation:
+
+```bash
+psql -h 127.0.0.1 -p 5432 -U lingofill_user -d lingofill -W -v ON_ERROR_STOP=1 -f database/upgrades/001_exercise_preferences.sql
+```
+
+For an existing Docker database, start the database if necessary and run from the project root:
+
+```bash
+docker compose up -d --build --wait
+docker compose cp database/upgrades/001_exercise_preferences.sql db:/tmp/001_exercise_preferences.sql
+docker compose exec db psql -U lingofill_user -d lingofill -v ON_ERROR_STOP=1 -f /tmp/001_exercise_preferences.sql
+```
+
+Replace the database name and user if your `.env` uses different values. A fresh Docker database already receives the fields from the updated `database/schema.sql`; existing volumes need the upgrade script. After upgrading, collect static files if your web server serves `staticfiles/`, restart Django/Waitress, and refresh the browser.
 
 ## Static files and branding
 

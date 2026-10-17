@@ -104,7 +104,8 @@
                 data-i18n-placeholder="aiGoalPlaceholder"
                 placeholder="Example: Practice sein and haben in present tense with ich, du, er, sie and wir."></textarea>
 
-            <div class="quick-options-grid">
+            <div class="quick-options-grid" x-data="exercisePreferenceSelector"
+                    data-save-url="{% url 'exercises:set_exercise_preference' %}">
                 <div class="field-group" x-data="learningLanguageSelector"
                         data-save-url="{% url 'accounts:set_learning_language' %}"
                         data-initial-language="{{ initial_learning_language_code }}"
@@ -139,32 +140,33 @@
 
                 <div class="field-group">
                     <label for="level" data-i18n="levelLabel">Level</label>
-                    <select id="level" name="level">
-                        <option value="A1" selected>A1</option>
-                        <option value="A2">A2</option>
-                        <option value="B1">B1</option>
+                    <select id="level" name="level" @change="saveOption($el)" :disabled="$store.languagePreferences.saving">
+                        {% for value, label in ai_form.fields.level.choices %}
+                            <option value="{{ value }}" {% if value == ai_form.level.value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
                 <div class="field-group">
                     <label for="sentence_count" data-i18n="sentenceCountLabel">Sentences</label>
-                    <select id="sentence_count" name="sentence_count">
-                        <option value="5">5</option>
-                        <option value="10" selected>10</option>
-                        <option value="15">15</option>
-                        <option value="20">20</option>
-                        <option value="30">30</option>
+                    <select id="sentence_count" name="sentence_count" @change="saveOption($el)" :disabled="$store.languagePreferences.saving">
+                        {% for value, label in ai_form.fields.sentence_count.choices %}
+                            <option value="{{ value }}" {% if value == ai_form.sentence_count.value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
                 <div class="field-group">
                     <label for="blank_count" data-i18n="blankCountLabel">Blanks</label>
-                    <select id="blank_count" name="blank_count">
-                        <option value="1" selected data-i18n="oneBlankOption">1 blank</option>
-                        <option value="1-2" data-i18n="oneTwoBlanksOption">1–2 blanks</option>
-                        <option value="2-3" data-i18n="twoThreeBlanksOption">2–3 blanks</option>
+                    <select id="blank_count" name="blank_count" @change="saveOption($el)" :disabled="$store.languagePreferences.saving">
+                        <option value="1" {% if ai_form.blank_count.value == '1' %}selected{% endif %} data-i18n="oneBlankOption">1 blank</option>
+                        <option value="1-2" {% if ai_form.blank_count.value == '1-2' %}selected{% endif %} data-i18n="oneTwoBlanksOption">1–2 blanks</option>
+                        <option value="2-3" {% if ai_form.blank_count.value == '2-3' %}selected{% endif %} data-i18n="twoThreeBlanksOption">2–3 blanks</option>
                     </select>
                 </div>
+                <p class="help-text" x-cloak x-show="saveError" role="alert" data-i18n="exercisePreferenceSaveError">
+                    Your exercise options could not be saved. Please try again.
+                </p>
             </div>
             <br />
             <div class="field-group" id="focus-multiselect" x-data="focusMultiselect">
@@ -326,6 +328,7 @@
 {% block page_javascript %}
     <script defer src="{% static 'core/alpine/focus-multiselect.js' %}"></script>
     <script defer src="{% static 'core/alpine/learning-language.js' %}"></script>
+    <script defer src="{% static 'core/alpine/exercise-preferences.js' %}"></script>
 
     {% if show_learning_language_dialog %}
         <script defer src="{% static 'core/alpine/initial-learning-language.js' %}"></script>

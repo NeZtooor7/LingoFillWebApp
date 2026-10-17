@@ -128,9 +128,10 @@
                             <!-- =============================================
                                  LOG OUT
                                  ============================================= -->
-                            <form method="post" action="{% url 'accounts:logout' %}">
+                            <form method="post" action="{% url 'accounts:logout' %}"
+                                    @submit="if ($store.languagePreferences.saving) { $event.preventDefault(); }">
                                 {% csrf_token %}
-                                <button type="submit" class="main-menu-item main-menu-form-button">
+                                <button type="submit" class="main-menu-item main-menu-form-button" :disabled="$store.languagePreferences.saving">
                                     <span aria-hidden="true">↪</span>
                                     <span data-i18n="logoutButton">Log out</span>
                                 </button>

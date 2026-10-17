@@ -64,6 +64,7 @@
     "interfaceLanguageLabel": "इंटरफ़ेस भाषा",
     "exerciseLanguageLabel": "अभ्यास की भाषा",
     "languagePreferenceSaveError": "आपकी भाषा प्राथमिकता सहेजी नहीं जा सकी। कृपया दोबारा प्रयास करें।",
+    "exercisePreferenceSaveError": "आपके अभ्यास के विकल्प सहेजे नहीं जा सके। कृपया फिर से प्रयास करें।",
     "generatingExerciseMessage": "अभ्यास बनाया जा रहा है...",
     "checkingAnswersMessage": "उत्तर जाँचे जा रहे हैं...",
     "loadingButtonText": "लोड हो रहा है...",
