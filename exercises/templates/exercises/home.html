@@ -91,7 +91,7 @@
     <section class="generator-card">
         <form id="ai-exercise-form" name="ai-exercise-form" class="input-form ai-form" method="post"
             action="{% url 'exercises:ai_exercise_create' %}"
-            @submit="$store.loading.start('generatingExerciseMessage', 'Generating exercise...')">
+            @submit="if ($store.languagePreferences.saving) { $event.preventDefault(); } else { $store.loading.start('generatingExerciseMessage', 'Generating exercise...'); }">
             {% csrf_token %}
             <input type="hidden" id="spoken-language-input" name="spoken_language" value="en">
 
@@ -106,12 +106,14 @@
 
             <div class="quick-options-grid">
                 <div class="field-group" x-data="learningLanguageSelector"
+                        data-save-url="{% url 'accounts:set_learning_language' %}"
                         data-initial-language="{{ initial_learning_language_code }}"
                         data-force-initial-language="{{ force_default_learning_language|yesno:'true,false' }}">
                     <label for="learning-language-toggle" data-i18n="exerciseLanguageLabel">Exercise language</label>
                     <div class="language-dropdown learning-language-dropdown" @click.outside="close">
                         <input type="hidden" id="learning-language-input" name="learning_language" :value="selected.language">
-                        <button id="learning-language-toggle" type="button" class="language-toggle" :aria-expanded="open" @click="toggle">
+                        <button id="learning-language-toggle" type="button" class="language-toggle" :aria-expanded="open"
+                                :aria-busy="saving" :disabled="saving" @click="toggle">
                             <img id="selected-learning-language-flag" class="flag-icon" :src="selected.flag" :alt="selected.label">
                             <span id="selected-learning-language-label" x-text="selected.label"></span>
                         </button>
@@ -123,13 +125,16 @@
                                         data-lang="{{ language.code }}"
                                         data-label="{{ language.original_name }}"
                                         data-flag="{% static 'core/flags/' %}{{ language.code }}.svg"
-                                        @click="selectOption($el)">
+                                        :disabled="saving" @click="selectOption($el)">
                                     <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
                                     <span>{{ language.original_name }}</span>
                                 </button>
                             {% endfor %}
                         </div>
                     </div>
+                    <p class="help-text" x-cloak x-show="saveError" role="alert" data-i18n="languagePreferenceSaveError">
+                        Your language preference could not be saved. Please try again.
+                    </p>
                 </div>
 
                 <div class="field-group">
@@ -275,7 +280,7 @@
                 </div>
             </details>
             <br />
-            <button type="submit" name="mode" value="ai" :disabled="$store.loading.active">
+            <button type="submit" name="mode" value="ai" :disabled="$store.loading.active || $store.languagePreferences.saving">
                 <span x-show="!$store.loading.active" data-i18n="generateAiButton">Generate AI exercise</span>
                 <span x-cloak x-show="$store.loading.active" x-text="window.getCurrentTranslation('loadingButtonText')"></span>
             </button>

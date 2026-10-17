@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -145,6 +145,34 @@ def set_initial_learning_language(request):
 
     return redirect('exercises:home')
 
+
+def _save_language_preference(request, field_name):
+    """Return the saved language code, or a JSON 400/401 for an invalid request."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required."}, status=401)
+
+    language_code = request.POST.get("language_code", "")
+    language = Languages.objects.filter(code=language_code).first() if language_code else None
+
+    if language is None:
+        return JsonResponse({"error": "Invalid language."}, status=400)
+
+    setattr(request.user, field_name, language.id)
+    request.user.save(update_fields=[field_name])
+
+    return JsonResponse({"language_code": language.code})
+
+
+@require_POST
+def set_interface_language(request):
+    return _save_language_preference(request, "preferred_interface_language_id")
+
+
+@require_POST
+def set_learning_language(request):
+    return _save_language_preference(request, "default_learning_language_id")
+
+
 @login_required
 @transaction.atomic
 def edit_account_view(request):
@@ -190,7 +218,8 @@ def edit_account_view(request):
             for language in learning_languages
         }
 
-        if user.default_learning_language_id not in selected_ids:
+        # Exercise language is independent of the user's learning interests.
+        if user.default_learning_language_id is None:
             if len(selected_ids) == 1:
                 user.default_learning_language_id = next(iter(selected_ids))
             else:

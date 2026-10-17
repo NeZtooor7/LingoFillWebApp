@@ -63,6 +63,7 @@
     "explanationUnavailable": "AI स्पष्टीकरण उपलब्ध नहीं है, लेकिन सही उत्तर ऊपर दिखाया गया है।",
     "interfaceLanguageLabel": "इंटरफ़ेस भाषा",
     "exerciseLanguageLabel": "अभ्यास की भाषा",
+    "languagePreferenceSaveError": "आपकी भाषा प्राथमिकता सहेजी नहीं जा सकी। कृपया दोबारा प्रयास करें।",
     "generatingExerciseMessage": "अभ्यास बनाया जा रहा है...",
     "checkingAnswersMessage": "उत्तर जाँचे जा रहे हैं...",
     "loadingButtonText": "लोड हो रहा है...",

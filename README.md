@@ -444,6 +444,10 @@ The interface language and learning language are separate settings.
 
 The preferred interface language is stored on the user account. Supported interface-language codes are provided from the database to the frontend, and i18next loads the matching locale JSON file.
 
+For signed-in users, choosing **Menu → Interface languages** immediately saves the interface preference through an Alpine.js request without reloading the page. Changing **Exercise language** separately saves the default learning language. Both selectors load the account's saved values when the page opens; browser storage does not override them. Learning interests in the profile do not restrict the exercise-language choices.
+
+If a preference request fails, the previous selection is retained and an error appears beside the selector. Exercise generation and profile submission are disabled while a preference save is in progress. Anonymous interface-language choices remain in browser storage.
+
 Changing interface language must not silently change the user's learning language.
 
 ## Static files and branding

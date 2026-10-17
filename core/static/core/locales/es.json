@@ -63,6 +63,7 @@
     "explanationUnavailable": "No hay una explicación de IA disponible, pero la respuesta correcta se muestra arriba.",
     "interfaceLanguageLabel": "Idioma de la interfaz",
     "exerciseLanguageLabel": "Idioma del ejercicio",
+    "languagePreferenceSaveError": "No se pudo guardar tu preferencia de idioma. Inténtalo de nuevo.",
     "generatingExerciseMessage": "Generando ejercicio...",
     "checkingAnswersMessage": "Comprobando respuestas...",
     "loadingButtonText": "Cargando...",

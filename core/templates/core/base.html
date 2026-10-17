@@ -31,7 +31,7 @@
                          ANONYMOUS USER:
                          Interface languages is directly visible.
                          ===================================================== -->
-                    <div class="language-dropdown">
+                    <div class="language-dropdown" x-data="interfaceLanguageSelector">
                         <button id="language-toggle" type="button" class="theme-toggle interface-language-toggle"
                                 aria-haspopup="true" aria-expanded="false">
                             <span aria-hidden="true">🌐</span>
@@ -45,12 +45,16 @@
                         <div id="language-menu" class="language-menu hidden">
                             {% for language in available_interface_languages %}
                                 <button type="button" class="language-option" data-lang="{{ language.code }}" data-label="{{ language.original_name }}"
-                                        data-flag="{% static 'core/flags/' %}{{ language.code }}.svg">
+                                        data-flag="{% static 'core/flags/' %}{{ language.code }}.svg"
+                                        :disabled="saving" @click.stop="selectLanguage($el.dataset.lang)">
                                     <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
                                     <span>{{ language.original_name }}</span>
                                 </button>
                             {% endfor %}
                         </div>
+                        <p class="help-text" x-cloak x-show="saveError" role="alert" data-i18n="languagePreferenceSaveError">
+                            Your language preference could not be saved. Please try again.
+                        </p>
                     </div>
                 {% endif %}
                 <!-- =========================================================
@@ -95,7 +99,8 @@
                                  The language list opens as a cascade menu
                                  beside this menu item.
                                  ============================================= -->
-                            <div class="main-menu-language-row language-dropdown">
+                            <div class="main-menu-language-row language-dropdown" x-data="interfaceLanguageSelector"
+                                    data-save-url="{% url 'accounts:set_interface_language' %}">
                                 <button id="language-toggle" type="button" class="main-menu-item main-menu-language-button"
                                         aria-haspopup="true" aria-expanded="false">
                                     <span aria-hidden="true">🌐</span>
@@ -109,12 +114,16 @@
                                 <div id="language-menu" class="language-menu main-menu-language-submenu hidden">
                                     {% for language in available_interface_languages %}
                                         <button type="button" class="language-option" data-lang="{{ language.code }}"
-                                                data-label="{{ language.original_name }}" data-flag="{% static 'core/flags/' %}{{ language.code }}.svg">
+                                                data-label="{{ language.original_name }}" data-flag="{% static 'core/flags/' %}{{ language.code }}.svg"
+                                                :disabled="saving" @click.stop="selectLanguage($el.dataset.lang)">
                                             <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
                                             <span>{{ language.original_name }}</span>
                                         </button>
                                     {% endfor %}
                                 </div>
+                                <p class="help-text" x-cloak x-show="saveError" role="alert" data-i18n="languagePreferenceSaveError">
+                                    Your language preference could not be saved. Please try again.
+                                </p>
                             </div>
                             <!-- =============================================
                                  LOG OUT
@@ -156,6 +165,7 @@
          ==================================================================== -->
     <script>
         window.LINGOFILL_LOCALES_URL = "{% static 'core/locales/' %}";
+        window.LINGOFILL_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
         window.LINGOFILL_PREFERRED_INTERFACE_LANGUAGE = "{{ preferred_interface_language_code|default:'en'|escapejs }}";
         window.LINGOFILL_FORCE_PREFERRED_INTERFACE_LANGUAGE = "{{ force_preferred_interface_language|yesno:'true,false' }}" === "true";
         window.LINGOFILL_SUPPORTED_INTERFACE_LANGUAGES = [
@@ -176,6 +186,7 @@
     <script defer src="{% static 'core/language-manager.js' %}"></script>
     <script defer src="{% static 'core/i18n.js' %}"></script>
     <script defer src="{% static 'core/alpine/stores.js' %}"></script>
+    <script defer src="{% static 'core/alpine/language-preferences.js' %}"></script>
 
     <!-- ====================================================================
          PAGE-SPECIFIC JAVASCRIPT

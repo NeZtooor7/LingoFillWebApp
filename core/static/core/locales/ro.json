@@ -63,6 +63,7 @@
     "explanationUnavailable": "Nu există o explicație AI disponibilă, dar răspunsul corect este afișat mai sus.",
     "interfaceLanguageLabel": "Limba interfeței",
     "exerciseLanguageLabel": "Limba exercițiului",
+    "languagePreferenceSaveError": "Preferința ta de limbă nu a putut fi salvată. Te rugăm să încerci din nou.",
     "generatingExerciseMessage": "Se generează exercițiul...",
     "checkingAnswersMessage": "Se verifică răspunsurile...",
     "loadingButtonText": "Se încarcă...",

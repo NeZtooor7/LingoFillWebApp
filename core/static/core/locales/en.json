@@ -63,6 +63,7 @@
     "explanationUnavailable": "No AI explanation was available, but the correct answer is shown above.",
     "interfaceLanguageLabel": "Interface language",
     "exerciseLanguageLabel": "Exercise language",
+    "languagePreferenceSaveError": "Your language preference could not be saved. Please try again.",
     "generatingExerciseMessage": "Generating exercise...",
     "checkingAnswersMessage": "Checking answers...",
     "loadingButtonText": "Loading...",

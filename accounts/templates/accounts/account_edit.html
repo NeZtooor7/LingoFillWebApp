@@ -3,7 +3,8 @@
 {% block content %}
     <h1 data-i18n="editAccountTitle">Change user data</h1>
     <p class="intro" data-i18n="editAccountIntro">Update your account information and language preferences.</p>
-    <form id="account-edit-form" method="post" x-data="passwordValidator(true)" @submit="validatePassword($event)"
+    <form id="account-edit-form" method="post" x-data="passwordValidator(true)"
+            @submit="if ($store.languagePreferences.saving) { $event.preventDefault(); } else { validatePassword($event); }"
             @lingofill:language-changed.document="setLanguage($event.detail?.language)">
         {% csrf_token %}
         <!-- =============================================================
@@ -73,7 +74,8 @@
              Language preferences
              ============================================================= -->
         <div class="registration-row registration-row-languages">
-            <div class="field-group" x-data="registrationInterfaceLanguageSelector" data-initial-language-id="{{ form.preferred_interface_language_id.value|default:'' }}">
+            <div class="field-group" x-data="registrationInterfaceLanguageSelector" data-initial-language-id="{{ form.preferred_interface_language_id.value|default:'' }}"
+                    @lingofill:interface-language-saved.document="syncPreference($event.detail.language)">
                 <label for="preferred-interface-language-toggle" data-i18n="preferredInterfaceLanguageIdLabel">
                     Preferred interface language
                 </label>
@@ -87,7 +89,7 @@
                     <div class="language-menu" x-cloak x-show="open" x-transition @click.outside="close" @keydown.escape.window="close">
                         {% for language in interface_languages %}
                             <button type="button" class="learning-language-option registration-interface-language-option"
-                                    data-language-id="{{ language.id }}" data-label="{{ language.original_name }}"
+                                    data-language-id="{{ language.id }}" data-lang="{{ language.code }}" data-label="{{ language.original_name }}"
                                     data-flag="{% static 'core/flags/' %}{{ language.code }}.svg" @click="selectOption($el)">
                                 <img src="{% static 'core/flags/' %}{{ language.code }}.svg" alt="{{ language.original_name }}" class="flag-icon">
                                 <span>
@@ -186,7 +188,8 @@
              Actions
              ============================================================= -->
         <div class="exercise-actions">
-            <button type="submit" class="action-button action-button-green" data-i18n="saveAccountChangesButton">
+            <button type="submit" class="action-button action-button-green" data-i18n="saveAccountChangesButton"
+                    :disabled="$store.languagePreferences.saving">
                 Save changes
             </button>
             <a href="{% url 'exercises:home' %}" class="action-button action-button-red" data-i18n="cancelButton">

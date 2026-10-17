@@ -22,7 +22,6 @@ class LingoFillLanguageManager {
     this.languageMenu = document.getElementById('language-menu');
     this.selectedLanguageFlag = document.getElementById('selected-language-flag');
     this.selectedLanguageLabel = document.getElementById('selected-language-label');
-    this.languageOptions = document.querySelectorAll('.language-option');
     this.forcePreferredLanguage = Boolean(forcePreferredLanguage);
   }
 
@@ -179,17 +178,6 @@ class LingoFillLanguageManager {
         }
       }
     );
-
-    this.languageOptions.forEach((option) => {
-      option.addEventListener(
-        'click',
-        async (event) => {
-          event.stopPropagation();
-          this.closeLanguageMenu();
-          await this.changeLanguage(option.dataset.lang);
-        }
-      );
-    });
 
     document.addEventListener(
       'click',

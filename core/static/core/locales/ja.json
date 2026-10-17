@@ -63,6 +63,7 @@
     "explanationUnavailable": "AIによる説明は利用できませんが、正解は上に表示されています。",
     "interfaceLanguageLabel": "表示言語",
     "exerciseLanguageLabel": "練習する言語",
+    "languagePreferenceSaveError": "言語設定を保存できませんでした。もう一度お試しください。",
     "generatingExerciseMessage": "練習を作成中...",
     "checkingAnswersMessage": "回答を確認中...",
     "loadingButtonText": "読み込み中...",

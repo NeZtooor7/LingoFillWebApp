@@ -49,6 +49,15 @@ document.addEventListener("alpine:init", () => {
             this.setSelected(option);
             this.close();
         },
+
+        syncPreference(language) {
+            const option = [...this.$root.querySelectorAll('.registration-interface-language-option')]
+                .find(option => option.dataset.lang === language);
+
+            if (option) {
+                this.setSelected(option);
+            }
+        },
     }));
 
 
